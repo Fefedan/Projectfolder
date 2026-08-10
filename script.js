@@ -92,7 +92,7 @@ function logout() {
         }
     }).finally(() => {
         localStorage.removeItem("token");
-        window.location.href = "home.html";
+        window.location.href = "index.html";
     });
 }
 
