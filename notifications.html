@@ -1,0 +1,175 @@
+<!--==========================================================*
+ * صفحة الإشعارات (Notifications Page)
+ * الهدف:
+ * عرض إشعارات المستخدم المتعلقة بالحجوزات والخدمات،
+ * مع إمكانية تصنيفها وإدارتها.
+ * تعتمد على:
+ * style.css للتنسيقات العامة،
+ * script.js للوظائف والتفاعل.
+ *==========================================================-->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <meta name="description" content="الإشعارات - منصة حجزي"><!-- وصف الصفحة لمحركات البحث -->
+    <title>الإشعارات - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <script src="auth-state.js"></script><!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+</head>
+<body>
+    <!------------------------------------------------------------------------------>
+    <!-- شريط التنقل الرئيسي للموقع -->
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <!-- الحاوية الرئيسية لعناصر شريط التنقل -->
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.png" alt="حجزي">
+                 
+            </a>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-calendar-check"></i> حجوزاتي
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <!------------------------------------------------------------------------------>
+    <!-- القائمة الجانبية المنسدلة للأجهزة المحمولة -->
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <!-- القسم الرئيسي للصفحة (Hero Section)
+      يعرض عنوان صفحة الإشعارات وإحصائياتها-->
+    <!-- Hero Section with Abstract Background -->
+    <section class="hero-section notifications-hero">
+        <!-- محتوى القسم الرئيسي -->
+        <div class="hero-content">
+            <!-- عنوان الصفحة -->
+            <h1 class="hero-title">الإشعارات</h1>
+            <!-- وصف مختصر للصفحة -->
+            <p class="hero-subtitle">ابق على اطلاع بجميع التحديثات والأخبار</p>
+            <!-- إحصائيات الإشعارات -->
+            <div class="notification-stats">
+                <!-- عدد الإشعارات الكلي -->
+                <div class="stat-item">
+                    <i class="fas fa-bell"></i>
+                     <!-- يتم تحديث العدد بواسطة JavaScript -->
+                    <span id="totalNotifications">5</span>
+                    <p>إجمالي الإشعارات</p>
+                </div>
+                <!-- عدد الإشعارات غير المقروءة -->
+                <div class="stat-item">
+                    <i class="fas fa-envelope"></i>
+                    <!-- يتم تحديث العدد بواسطة JavaScript -->
+                    <span id="unreadNotifications">3</span>
+                    <p>غير مقروءة</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- قسم الإشعارات
+    يحتوي على قائمة الإشعارات وخيارات التصفية-->
+    <!-- Notifications Section -->
+    <section class="section">
+        <!-- عنوان القسم وأزرار التصفية -->
+        <div class="section-header">
+            <!-- عنوان قائمة الإشعارات -->
+            <h2 class="section-title">جميع الإشعارات</h2>
+            <!-- خيارات تصنيف الإشعارات -->
+            <div class="notification-filters">
+                <!-- عرض جميع الإشعارات -->
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <!-- عرض الإشعارات غير المقروءة -->
+                <button class="filter-btn" data-filter="unread">غير مقروءة</button>
+                 <!-- عرض الإشعارات المقروءة -->
+                <button class="filter-btn" data-filter="read">مقروءة</button>
+            </div>
+        </div>
+        <!-- حاوية عرض الإشعارات
+        يتم إنشاء محتواها بشكل ديناميكي بواسطة JavaScript-->
+
+        <div id="notificationsList" class="notifications-container"></div>
+
+       <!--ازرار التحكم بالاشعارات-->
+        <div class="notifications-actions">
+            <!-- تعيين جميع الإشعارات كمقروءة -->
+            <button class="btn-primary mark-all-read">
+                <i class="fas fa-check-double"></i> تعيين الكل كمقروء
+            </button>
+            <!-- حذف جميع الإشعارات -->
+            <button class="btn-secondary clear-all">
+                <i class="fas fa-trash-alt"></i> مسح الكل
+            </button>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- Modern Footer -->
+    <footer class="modern-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>منصة حجزي</h3>
+                <p>منصة إلكترونية رائدة لحجز الفنادق والمطاعم والنوادي الرياضية والصالونات النسائية بسهولة وأمان.</p>
+               
+            </div>
+            <div class="footer-section">
+                <h3>روابط سريعة</h3>
+                <ul>
+                    <li><a href="home.html">الرئيسية</a></li>
+                    <li><a href="aboutus.html">من نحن</a></li>
+                    <li><a href="contactus.html">تواصل معنا</a></li>
+                    <li><a href="dashboard.html">لوحة التحكم</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>خدماتنا</h3>
+                <ul>
+                    <li><a href="hotelsPage.html">الفنادق</a></li>
+                    <li><a href="resturantPage.html">المطاعم</a></li>
+                    <li><a href="gymPage.html">النوادي الرياضية</a></li>
+                    <li><a href="salonPage.html">الصالونات</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>تواصل معنا</h3>
+                <ul>
+                    <li><i class="fas fa-phone"></i> 05XXXXXXXX</li>
+                    <li><i class="fas fa-envelope"></i> info@hajzi.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> المملكة العربية السعودية</li>
+                </ul>
+            </div>
+        </div>
+      
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

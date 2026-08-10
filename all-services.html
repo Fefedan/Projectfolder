@@ -1,0 +1,256 @@
+<!-- =====================================================
+     صفحة جميع الخدمات على المنصة
+     تعرض جميع الخدمات المعتمدة الموجودة في النظام،
+     مع إمكانية تصفيتها حسب نوع الخدمة، كما يتم
+     تكييف القائمة الجانبية حسب نوع المستخدم.
+===================================================== -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <title>جميع الخدمات على المنصة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+    <script src="auth-state.js"></script>
+</head>
+    <!------------------------------------------------------------------------------>
+    <!-- Dynamic Navbar --><!-- شريط التنقل الرئيسي الخاص بالموقع -->
+<body class="dashboard-page">
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.svg" alt="حجزي">
+            </a>
+            <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a id="topControlLink" href="adminpage.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-cog"></i> لوحة التحكم
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+        </div>
+    </nav>
+    <!------------------------------------------------------------------------------>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="dashboard-layout"><!-- تخطيط صفحة عرض الخدمات -->
+        <!-- Sidebar --><!-- القائمة الجانبية التي تحتوي على أقسام لوحة التحكم -->
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+            <div class="user-info">
+                <h3 id="sidebarUserName">الإدارة</h3>
+                <p id="sidebarUserRole">جميع الخدمات على المنصة</p>
+            </div>
+            <ul class="sidebar-menu" id="sidebarMenu"></ul>
+            <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+        </aside>
+        <!------------------------------------------------------------------------------>
+        <!-- المحتوى الرئيسي لعرض جميع الخدمات -->
+        <main class="dashboard-main">
+            <div class="section-header" style="text-align: right; margin-bottom: 1.5rem;">
+                <h1 style="margin-bottom: 0.5rem;">جميع الخدمات على المنصة</h1>
+                <p class="section-subtitle" style="margin: 0; max-width: none;">استعرض كل الخدمات المتاحة في المنصة من خلال بطاقة عرض أنيقة ومناسبة لواجهة الإدارة.</p>
+            </div>
+            <!-- أزرار تصفية الخدمات حسب النوع -->
+            <!-- Service Type Filter -->
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+                <button class="filter-btn active" data-type="all" onclick="filterServicesByType('all')">الكل</button>
+                <button class="filter-btn" data-type="hotel" onclick="filterServicesByType('hotel')">فنادق</button>
+                <button class="filter-btn" data-type="gym" onclick="filterServicesByType('gym')">أندية</button>
+                <button class="filter-btn" data-type="salon" onclick="filterServicesByType('salon')">صالونات</button>
+                <button class="filter-btn" data-type="restaurant" onclick="filterServicesByType('restaurant')">مطاعم</button>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- يتم عرض بطاقات الخدمات هنا بشكل ديناميكي -->
+
+            <div id="allServicesGrid" class="cards-grid"></div>
+        </main>
+    </div>
+    <!-- تحميل الوظائف المشتركة بين صفحات الموقع -->
+
+    <script src="script.js"></script>
+    <script>
+        // مصفوفة لتخزين جميع الخدمات المعتمدة
+        let allServicesData = [];
+        // جلب جميع الخدمات المعتمدة من قاعدة البيانات
+
+        async function loadAllServices() {
+            const container = document.getElementById('allServicesGrid');
+            if (!container) return;
+
+            container.innerHTML = '<div class="modern-card" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">جاري تحميل الخدمات...</div>';
+
+            try {
+                const services = await ServicesDB.getApproved();
+                allServicesData = Array.isArray(services) ? services : [];
+
+                if (allServicesData.length === 0) {
+                    container.innerHTML = '<div class="modern-card" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">لا توجد خدمات متاحة حالياً.</div>';
+                    return;
+                }
+
+                renderServices(allServicesData);
+            } catch (error) {
+                console.error('Error loading all services:', error);
+                container.innerHTML = '<div class="modern-card" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">تعذر تحميل الخدمات. حاول لاحقًا.</div>';
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // إنشاء بطاقات الخدمات وعرضها داخل الصفحة
+
+        function renderServices(services) {
+            const container = document.getElementById('allServicesGrid');
+            if (!container) return;
+
+            container.innerHTML = services.map(service => `
+                <article class="modern-card hover-lift" style="display:flex; flex-direction:column; gap:0.5rem; overflow:hidden;">
+                    ${service.image_url ? `<img src="${service.image_url}" alt="${service.title || service.service_type || 'خدمة'}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">` : '<img src="Images/logo.svg" alt="'+(service.title || service.service_type || 'خدمة')+'" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">'}
+                    
+                    <div style="padding: 0.5rem 0;">
+                        <a href="service-details.html?id=${encodeURIComponent(service.id)}" class="card-btn" style="display:block; text-align:center; background:var(--gradient-1); color:white; padding:0.75rem 1rem; border-radius:12px; text-decoration:none; font-weight:700; transition:transform 0.2s ease;">
+                            <i class="fas fa-eye"></i> عرض
+                        </a>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.5rem 0;">
+                        <span class="status-badge status-confirmed" style="font-size:0.85rem;">${getServiceTypeLabel(service.service_type)}</span>
+                        <div style="background: linear-gradient(135deg, var(--accent-color), #ff8d4d); color:white; padding:0.4rem 0.7rem; border-radius:999px; font-weight:700; font-size:0.9rem;">
+                            ${service.price || 0} ر.س
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // تحويل نوع الخدمة من القيمة البرمجية إلى اسم عربي
+        function getServiceTypeLabel(type) {
+            const labels = {
+                'hotel': 'فندق',
+                'gym': 'نادي',
+                'salon': 'صالون',
+                'restaurant': 'مطعم'
+            };
+            return labels[type] || type || 'خدمة';
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // تصفية الخدمات حسب النوع المحدد من المستخدم
+        function filterServicesByType(type) {
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter services
+            if (type === 'all') {
+                renderServices(allServicesData);
+            } else {
+                const filtered = allServicesData.filter(service => 
+                    (service.service_type || '').toLowerCase() === type.toLowerCase()
+                );
+                renderServices(filtered);
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // جلب بيانات المستخدم الحالي من Local Storage
+
+        function getCurrentUser() {
+            try {
+                return JSON.parse(localStorage.getItem('currentUser') || 'null');
+            } catch (error) {
+                return null;
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // إنشاء القائمة الجانبية حسب نوع المستخدم (مدير - عميل - مقدم خدمة)
+
+        function buildSidebarByRole() {
+            const currentUser = getCurrentUser();
+            const userNameElement = document.getElementById('sidebarUserName');
+            const userRoleElement = document.getElementById('sidebarUserRole');
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            const topControlLink = document.getElementById('topControlLink');
+
+            if (!sidebarMenu) return;
+
+            const role = currentUser?.role || 'admin';
+            const userName = currentUser?.full_name || currentUser?.email || 'المستخدم';
+            const roleLabel = role === 'provider' ? 'مقدم خدمة' : role === 'customer' ? 'عميل المنصة' : 'مدير النظام';
+
+            if (userNameElement) {
+                userNameElement.textContent = userName;
+            }
+            if (userRoleElement) {
+                userRoleElement.textContent = roleLabel;
+            }
+
+            if (topControlLink) {
+                if (role === 'provider') {
+                    topControlLink.href = 'provider.html';
+                    topControlLink.innerHTML = '<i class="fas fa-cog"></i> لوحة مقدم الخدمة';
+                } else if (role === 'customer') {
+                    topControlLink.href = 'dashboard.html';
+                    topControlLink.innerHTML = '<i class="fas fa-cog"></i> لوحة العميل';
+                } else {
+                    topControlLink.href = 'adminpage.html';
+                    topControlLink.innerHTML = '<i class="fas fa-cog"></i> لوحة التحكم';
+                }
+            }
+
+            let menuItems = '';
+
+            if (role === 'provider') {
+                menuItems = `
+                    <li><a href="provider.html#profile"><i class="fas fa-chart-bar"></i> التقارير والأحصائيات</a></li>
+                    <li><a href="provider.html#Services"><i class="fas fa-cog"></i> إدارة الخدمات</a></li>
+                    <li><a href="provider.html#bookings"><i class="fas fa-calendar-check"></i> الحجوزات الواردة</a></li>
+                    <li><a href="provider.html#offers"><i class="fas fa-tag"></i> إدارة العروض والأسعار</a></li>
+                    <li><a href="all-services.html" class="active"><i class="fas fa-store"></i> جميع الخدمات على المنصة</a></li>
+                    <li><a href="provider.html#notificationsprovider"><i class="fas fa-bell"></i> الإشعارات</a></li>
+                    <li><a href="provider.html#settings"><i class="fas fa-cog"></i> الإعدادات</a></li>
+                `;
+            } else if (role === 'customer') {
+                menuItems = `
+                    <li><a href="dashboard.html#profile"><i class="fas fa-chart-bar"></i> التقارير والأحصائيات</a></li>
+                    <li><a href="dashboard.html#bookings"><i class="fas fa-calendar-check"></i> الحجوزات</a></li>
+                    <li><a href="dashboard.html#notifications"><i class="fas fa-bell"></i> الإشعارات</a></li>
+                    <li><a href="all-services.html" class="active"><i class="fas fa-store"></i> جميع الخدمات على المنصة</a></li>
+                    <li><a href="dashboard.html#settings"><i class="fas fa-cog"></i> الإعدادات</a></li>
+                `;
+            } else {
+                menuItems = `
+                    <li><a href="adminpage.html#reports"><i class="fas fa-chart-line"></i> التقارير والإحصائيات</a></li>
+                    <li><a href="adminpage.html#Services"><i class="fas fa-cog"></i> إدارة المستخدمين</a></li>
+                    <li><a href="all-services.html" class="active"><i class="fas fa-store"></i> جميع الخدمات على المنصة</a></li>
+                    <li><a href="adminpage.html#notificationsprovider"><i class="fas fa-bell"></i> الإشعارات العامة</a></li>
+                    <li><a href="adminpage.html#settings"><i class="fas fa-cog"></i> الإعدادات</a></li>
+                `;
+            }
+
+            sidebarMenu.innerHTML = menuItems;
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // تنفيذ الوظائف الأساسية بعد تحميل الصفحة
+
+        document.addEventListener('DOMContentLoaded', function () {
+            buildSidebarByRole();
+            loadAllServices();
+        });
+    </script>
+</body>
+</html>

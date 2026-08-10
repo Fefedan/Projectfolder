@@ -1,0 +1,152 @@
+<!--==========================================================*
+ * الصفحة الرئيسية (Home Page)
+ * الهدف:
+ * توفير الواجهة الرئيسية لمنصة حجوزاتي، وعرض الخدمات المتاحة
+ * والعروض الخاصة، مع إمكانية البحث عن الخدمات والتنقل بين أقسام الموقع.
+ * تعتمد على:
+ * style.css لتنسيق الواجهة،
+ * script.js لجلب البيانات وإدارة التفاعل،
+ * Supabase لعرض الخدمات والعروض بشكل ديناميكي.
+ *==========================================================-->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <meta name="description" content="منصة حجزي - منصة إلكترونية لحجز الفنادق والمطاعم والنوادي الرياضية والصالونات"><!-- وصف الصفحة لمحركات البحث -->
+    <title>حجزي - احجز بسهولة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <script src="auth-state.js"></script><!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+</head>
+<body>
+    <!------------------------------------------------------------------------------>
+    <!-- شريط التنقل الرئيسي للموقع -->
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.png" alt="حجزي">
+
+            </a>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-calendar-check"></i> حجوزاتي
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!------------------------------------------------------------------------------>
+    <!-- القائمة الجانبية المنسدلة للأجهزة المحمولة -->
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <!-- Hero Section -->
+     <!-- رسالة ترحيبية مع محرك بحث-->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">احجز خدماتك المفضلة بسهولة وأمان</h1>
+            <p class="hero-subtitle">منصة حجزي - وجهتك الأولى لحجز الفنادق والمطاعم والنوادي الرياضية والصالونات في المملكة العربية السعودية</p>
+            <!-- مربع البحث عن الخدمات يتم إدخال اسم الخدمة ثم البحث داخل الخدمات المعروضة -->
+            <div class="hero-search" data-search-target=".cards-container .cards-grid">
+                <input id="homeSearchInput" type="text" placeholder="ابحث عن خدمة..." aria-label="ابحث عن خدمة">
+                <button id="homeSearchButton" type="button"><i class="fas fa-search"></i> ابحث</button>
+            </div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- Services Section --> <!-- قسم الخدمات -->
+    <!-- جلب البيانات من قاعدة البيانات بواسطة JS وعرضها داخل الصفحة بشكل ديناميكي -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">خدماتنا المميزة</h2>
+            <p class="section-subtitle">اكتشف مجموعة متنوعة من الخدمات عالية الجودة</p>
+        </div>
+        <div class="cards-container">
+            <!-- الحاوية التي يتم تعبئتها تلقائياً ببطاقات الخدمات -->
+            <div id="servicesGrid" class="cards-grid"></div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- Special Offers Section --><!-- قسم العروض الخاصة -->
+    <!-- جلب البيانات من قاعدة البيانات بواسطة JS وعرضها داخل الصفحة بشكل ديناميكي -->
+    <section class="section" style="background-color: #f9fafb;">
+        <div class="section-header">
+            <h2 class="section-title">العروض الخاصة</h2>
+            <p class="section-subtitle">استمتع بأفضل الخصومات والعروض الحصرية</p>
+        </div>
+        <div class="cards-container">
+            <div id="offersGrid" class="cards-grid"></div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- Modern Footer -->
+    <!-- يحتوي على معلومات المنصة وروابط التنقل ووسائل التواصل -->
+    <footer class="modern-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>منصة حجزي</h3>
+                <p>منصة إلكترونية رائدة لحجز الفنادق والمطاعم والنوادي الرياضية والصالونات النسائية بسهولة وأمان.</p>
+               
+            </div>
+            <div class="footer-section">
+                <h3>روابط سريعة</h3>
+                <ul class="footer-links">
+                    <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                    <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                    <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>خدماتنا</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-utensils"></i> خدمات الضيافة</a></li>
+                    <li><i class="fas fa-hotel"></i> خدمات الإقامة</a></li>
+                    <li><i class="fas fa-dumbbell"></i> خدمات اللياقة</a></li>
+                    <li><i class="fas fa-spa"></i> خدمات التجميل</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>تواصل معنا</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-envelope"></i> info@hazzi.sa</li>
+                    <li><i class="fas fa-phone"></i>009665611747</li>
+                    <li><i class="fas fa-map-marker-alt"></i> المملكة العربية السعودية</li>
+                </ul>
+            </div>
+        </div>
+      
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

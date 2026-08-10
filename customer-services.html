@@ -1,0 +1,321 @@
+<!-- =====================================================
+     صفحة استعراض الخدمات
+     تتيح لعميل المنصة استعراض جميع الخدمات والعروض
+     المتاحة، مع إمكانية البحث والتصفية حسب نوع
+     الخدمة أو نسبة الخصم، بالإضافة إلى عرض تفاصيل
+     كل خدمة أو عرض خاص.
+===================================================== -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <title>استعراض الخدمات - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <script src="auth-state.js"></script><!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+    <script src="script.js"></script>
+</head>
+<body>
+    <!------------------------------------------------------------------------------>
+    <!-- شريط التنقل الرئيسي للموقع -->
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo"><img src="Images/logo.png" alt="حجزي"></a>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+            </div>
+            <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!------------------------------------------------------------------------------>
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <!------------------------------------------------------------------------------>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- واجهة لوحة العميل والقائمة الجانبية -->
+    <div class="dashboard-layout">
+        <!-- القائمة الجانبية الخاصة بعميل المنصة -->
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+            <div class="user-info">
+                <h3>عميل المنصة</h3>
+                <p>لوحة التحكم</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html#profile"><i class="fas fa-chart-bar"></i> التقارير والأحصائيات</a></li>
+                <li><a href="dashboard.html#bookings"><i class="fas fa-calendar-check"></i> الحجوزات</a></li>
+                <li><a href="customer-services.html" class="active"><i class="fas fa-th-list"></i> استعراض الخدمات</a></li>
+                <li><a href="dashboard.html#notifications"><i class="fas fa-bell"></i> الإشعارات</a></li>
+                <li><a href="dashboard.html#settings"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            </ul>
+            <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+        </aside>
+        <!------------------------------------------------------------------------------>
+        <!-- المحتوى الرئيسي لصفحة استعراض الخدمات -->
+        <main class="dashboard-main page-container">
+        <section style="max-width:1100px; margin:2rem auto;">
+            <h1>استعراض الخدمات والعروض</h1>
+            <!-- أزرار التبديل بين عرض الخدمات والعروض الخاصة -->
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1rem; align-items:center; justify-content:space-between;">
+                <div style="display:flex; gap:0.5rem;">
+                    <button id="showServicesBtn" class="card-btn" style="background:var(--gradient-1);">عرض الخدمات</button>
+                    <button id="showOffersBtn" class="card-btn" style="background:var(--gradient-1);">العروض الخاصة</button>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                </div>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- Services toolbar -->
+             <!-- أدوات البحث والتصفية الخاصة بالخدمات -->
+            <div id="servicesToolbar" style="display:block; margin-top:1rem;">
+                <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
+                    <button class="filter-btn active" data-type="all" onclick="filterCustomerServicesByType('all')">الكل</button>
+                    <button class="filter-btn" data-type="hotel" onclick="filterCustomerServicesByType('hotel')">فنادق</button>
+                    <button class="filter-btn" data-type="gym" onclick="filterCustomerServicesByType('gym')">أندية</button>
+                    <button class="filter-btn" data-type="salon" onclick="filterCustomerServicesByType('salon')">صالونات</button>
+                    <button class="filter-btn" data-type="restaurant" onclick="filterCustomerServicesByType('restaurant')">مطاعم</button>
+                </div>
+                <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                    <input id="serviceSearch" placeholder="بحث عن خدمة أو وصف" class="form-input" style="flex:1; min-width:220px;">
+                    <button id="filterServicesBtn" class="card-btn">تطبيق البحث</button>
+                </div>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- أدوات البحث والتصفية الخاصة بالعروض -->
+            <!-- Offers toolbar (hidden by default) -->
+            <div id="offersToolbar" style="display:none; margin-top:1rem;">
+                <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                    <input id="offerSearch" placeholder="بحث في العروض" class="form-input" style="flex:1; min-width:220px;">
+                    <input id="minDiscount" type="number" min="0" max="100" placeholder="الحد الأدنى للخصم (%)" class="form-input" style="width:220px;">
+                    <button id="filterOffersBtn" class="card-btn">تطبيق تصفية العروض</button>
+                </div>
+            </div>
+
+            <hr style="margin:1.25rem 0;">
+
+            <h2 id="servicesHeading">جميع الخدمات</h2>
+            <!-- المنطقة المخصصة لعرض بطاقات الخدمات -->
+            <div id="customerServicesGrid" class="cards-grid" style="margin-top:0.75rem;"></div>
+
+            <hr style="margin:1.25rem 0;">
+
+            <h2 id="offersHeading" style="display:none">العروض الخاصة</h2>
+            <!-- المنطقة المخصصة لعرض بطاقات العروض -->
+            <div id="customerOffersGrid" class="cards-grid" style="margin-top:0.75rem; display:none;"></div>
+        </section>
+    </main>
+    <!------------------------------------------------------------------------------>
+    <script>
+        // متغير يحتوي جميع الخدمات المحملة من قاعدة البيانات
+        let allCustomerServicesData = [];
+
+        // إنشاء بطاقات الخدمات وعرضها داخل الصفحة
+        function renderServices(list) {
+            const container = document.getElementById('customerServicesGrid');
+            container.innerHTML = '';
+            if (!list.length) {
+                container.innerHTML = '<div class="modern-card" style="grid-column:1/-1; text-align:center;">لا توجد خدمات</div>';
+                return;
+            }
+            list.forEach(svc => {
+                const card = document.createElement('div');
+                card.className = 'modern-card hover-lift';
+                const serviceTitle = getServiceDisplayTitle(svc);
+                const serviceImage = svc.image_url ? escapeHtml(svc.image_url) : 'Images/logo.svg';
+                
+                // Debug: check if service ID exists
+                if (!svc.id) {
+                    console.error('Service missing ID:', svc);
+                    return; // Skip this service
+                }
+                
+                card.innerHTML = `
+                    ${svc.image_url ? `<img src="${serviceImage}" alt="${escapeHtml(serviceTitle)}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">` : '<img src="Images/logo.svg" alt="'+escapeHtml(serviceTitle)+'" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">'}
+                    
+                    <div style="padding: 0.5rem 0;">
+                        <a href="service-details.html?id=${encodeURIComponent(svc.id)}" class="card-btn" style="display:block; text-align:center; background:var(--gradient-1); color:white; padding:0.75rem 1rem; border-radius:12px; text-decoration:none; font-weight:700; transition:transform 0.2s ease;">
+                            <i class="fas fa-eye"></i> عرض
+                        </a>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.5rem 0;">
+                        <span class="status-badge status-confirmed" style="font-size:0.85rem;">${getServiceTypeLabel(svc.service_type)}</span>
+                        <div style="background: linear-gradient(135deg, var(--accent-color), #ff8d4d); color:white; padding:0.4rem 0.7rem; border-radius:999px; font-weight:700; font-size:0.9rem;">
+                            ${svc.price || 0} ر.س
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        ////////////////////////////////////////////////////
+        // تحويل نوع الخدمة إلى اسم عربي مناسب للعرض
+        function getServiceTypeLabel(type) {
+            const labels = {
+                'hotel': 'فندق',
+                'gym': 'نادي',
+                'salon': 'صالون',
+                'restaurant': 'مطعم'
+            };
+            return labels[type] || type || 'خدمة';
+        }
+        ////////////////////////////////////////////////////
+        // إنشاء بطاقات العروض الخاصة وعرضها للمستخدم
+        function renderOffers(list) {
+            const container = document.getElementById('customerOffersGrid');
+            container.innerHTML = '';
+            if (!list.length) {
+                container.innerHTML = '<div class="modern-card" style="grid-column:1/-1; text-align:center;">لا توجد عروض</div>';
+                return;
+            }
+            list.forEach(offer => {
+                const card = document.createElement('div');
+                card.className = 'modern-card hover-lift';
+                const offerImage = offer.image_url ? escapeHtml(offer.image_url) : 'Images/logo.svg';
+                card.innerHTML = `
+                    ${offer.image_url ? `<img src="${offerImage}" alt="${escapeHtml(offer.title || 'عرض')}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">` : '<img src="Images/logo.svg" alt="'+escapeHtml(offer.title || 'عرض')+'" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">'}
+                    
+                    <div style="padding: 0.5rem 0;">
+                        <h3 class="card-title" style="margin:0.5rem 0;">${escapeHtml(offer.title || 'عرض')}</h3>
+                        <p class="card-description" style="margin:0.25rem 0;">${escapeHtml(offer.description || 'احصل على أفضل الخصومات الآن!')}</p>
+                        <div style="font-size:1.2rem; color:#10b981; font-weight:700; margin:0.5rem 0;">خصم ${escapeHtml(offer.discount_percentage || 0)}%</div>
+                        <small style="color:var(--text-secondary);">صالح حتى: ${offer.end_date ? new Date(offer.end_date).toLocaleDateString('ar-SA') : 'غير محدد'}</small>
+                    </div>
+
+                    <div style="padding: 0.5rem 0;">
+                        <a href="offer-details.html?id=${encodeURIComponent(offer.id)}" class="card-btn" style="display:block; text-align:center; background:var(--gradient-1); color:white; padding:0.75rem 1rem; border-radius:12px; text-decoration:none; font-weight:700; transition:transform 0.2s ease;">
+                            <i class="fas fa-eye"></i> عرض العرض
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        ////////////////////////////////////////////////////
+        // تصفية الخدمات حسب نوع الخدمة المختار
+        function filterCustomerServicesByType(type) {
+            // Update active button
+            document.querySelectorAll('#servicesToolbar .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter services
+            if (type === 'all') {
+                renderServices(allCustomerServicesData);
+            } else {
+                const filtered = allCustomerServicesData.filter(service => 
+                    (service.service_type || '').toLowerCase() === type.toLowerCase()
+                );
+                renderServices(filtered);
+            }
+        }
+
+        ////////////////////////////////////////////////////
+        // تشغيل الصفحة بعد تحميل عناصرها والتحقق من صلاحية المستخدم
+        // Customer-only access
+        document.addEventListener('DOMContentLoaded', async function () {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || currentUser.role !== 'customer') {
+                alert('هذه الصفحة مخصصة لعملاء المنصة فقط. سيتم توجيهك إلى الرئيسية.');
+                window.location.href = 'home.html';
+                return;
+            }
+            ////////////////////////////////////////////////////
+            // Load data
+            // تحميل الخدمات المعتمدة من قاعدة البيانات
+            async function loadServices() {
+                try {
+                    const services = await ServicesDB.getApproved();
+                    allCustomerServicesData = services || [];
+                    renderServices(allCustomerServicesData);
+                } catch (e) { console.error('Failed to load services', e); }
+            }
+            ////////////////////////////////////////////////////
+            // تحميل العروض النشطة من قاعدة البيانات
+            async function loadOffers() {
+                try {
+                    const offers = await OffersDB.getActive();
+                    renderOffers(offers || []);
+                } catch (e) { console.error('Failed to load offers', e); }
+            }
+            ////////////////////////////////////////////////////
+            // Filters
+            // إظهار قائمة الخدمات وإخفاء قسم العروض
+            document.getElementById('showServicesBtn').addEventListener('click', async () => {
+                // show services toolbar and grid
+                document.getElementById('servicesToolbar').style.display = 'block';
+                document.getElementById('customerServicesGrid').style.display = '';
+                document.getElementById('servicesHeading').style.display = '';
+                // hide offers
+                document.getElementById('offersToolbar').style.display = 'none';
+                document.getElementById('customerOffersGrid').style.display = 'none';
+                document.getElementById('offersHeading').style.display = 'none';
+            });
+            // إظهار قائمة العروض وإخفاء قسم الخدمات
+            document.getElementById('showOffersBtn').addEventListener('click', async () => {
+                // show offers toolbar and grid
+                document.getElementById('offersToolbar').style.display = 'block';
+                document.getElementById('customerOffersGrid').style.display = '';
+                document.getElementById('offersHeading').style.display = '';
+                // hide services
+                document.getElementById('servicesToolbar').style.display = 'none';
+                document.getElementById('customerServicesGrid').style.display = 'none';
+                document.getElementById('servicesHeading').style.display = 'none';
+            });
+            // تنفيذ البحث داخل الخدمات حسب الكلمات المدخلة
+            document.getElementById('filterServicesBtn').addEventListener('click', async () => {
+                const q = (document.getElementById('serviceSearch').value || '').trim().toLowerCase();
+                const services = await ServicesDB.getApproved();
+                const filtered = (services || []).filter(s => {
+                    const titleText = getServiceDisplayTitle(s);
+                    const text = (titleText + ' ' + (s.service_type || '') + ' ' + (s.description || '')).toLowerCase();
+                    const matchQ = !q || text.includes(q);
+                    return matchQ;
+                });
+                renderServices(filtered);
+            });
+            // تنفيذ البحث داخل العروض وتطبيق الحد الأدنى للخصم
+            document.getElementById('filterOffersBtn').addEventListener('click', async () => {
+                const q = (document.getElementById('offerSearch').value || '').trim().toLowerCase();
+                const minD = Number(document.getElementById('minDiscount').value || 0);
+                const offers = await OffersDB.getActive();
+                const filtered = (offers || []).filter(o => {
+                    const text = (o.title + ' ' + (o.description || '')).toLowerCase();
+                    const matchQ = !q || text.includes(q);
+                    const matchD = !minD || Number(o.discount_percentage || 0) >= minD;
+                    return matchQ && matchD;
+                });
+                renderOffers(filtered);
+            });
+            ////////////////////////////////////////////////////
+            // default view: show services 
+            // عرض الخدمات بشكل افتراضي ثم تحميل البيانات من قاعدة البيانات
+            document.getElementById('showServicesBtn').click();
+
+            // initial load
+            await loadServices();
+            await loadOffers();
+        });
+    </script>
+</body>
+</html>

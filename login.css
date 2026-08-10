@@ -1,0 +1,318 @@
+/*==========================================================
+    صفحة تسجيل الدخول وإنشاء الحساب
+    يعتمد هذا الملف على style.css كملف التنسيق الأساسي
+    ويحتوي فقط على التنسيقات الخاصة بهذه الصفحة.
+==========================================================*/
+
+/*  الحاوية الرئيسية للصفحة */
+/* جعل محتوى الصفحة في منتصف الشاشة */
+body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:var(--light-bg);
+}
+/* الحاوية الرئيسية للنماذج*/
+/* الحاوية التي تحتوي على نموذج تسجيل الدخول والتسجيل */
+.container{
+    position:relative;
+    width:900px;
+    height:650px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    overflow:hidden;
+    box-shadow: var(--shadow-lg);
+}
+/*************************************************************/
+/*حاوية نموذج تسجيل الدخول وانشاء الحساب*/
+/* تنسيق الحاوية الخاصة بالنموذج */
+.form-box{
+    position:absolute;
+    top:0;
+    right:0;
+    width:50%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px;
+    background: var(--primary-light);
+    color:white;
+    text-align:center;
+    z-index:5;
+    transition:.6s ease-in-out;
+}
+/* اظهار نموذج تسجيل الدخول*/
+.container.active .form-box.login{
+    right:50%;
+}
+/*اخفاء نموذج انشاء الحساب افتراضياً*/
+.form-box.register{
+    right:-50%;
+    opacity:0;
+    pointer-events:none;
+}
+/*اظهار نموذج انشاء الحساب*/
+.container.active .form-box.register{
+    right:0;
+    opacity:1;
+    pointer-events:auto;
+}
+/*اخفاء نموذج تسجيل الدخول اثناء الانتقال*/
+.container.active .form-box.login{
+    right:50%;
+    opacity:0;
+    pointer-events:none;
+}
+/* عناصر النموذج*/
+
+/*تنسيق النموذج*/
+form{
+    width:100%;
+}
+/*عنوان النموذج*/
+form h1{
+    margin-bottom:20px;
+    font-size:20px;
+    color:white;
+}
+/* حاوية حقول الادخال*/
+.input-box{
+    position:relative;
+    margin:14px 0;
+}
+/* تنسيق حقول الإدخال والقائمة المنسدلة */
+.input-box input,
+.role-select{
+    width:100%;
+    height:56px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:#f5f7ff;
+    border:2px solid #d6dcff;
+    color:var(--text-primary);
+    font-size:16px;
+    padding:0 45px;
+    transition:.3s;
+}
+/* تغيير مظهر حقول الإدخال عند التركيز عليها */
+.input-box input:focus,
+.role-select:focus{
+    border-color:black;
+    box-shadow:0 0 10px rgba(108,99,255,.25);
+}
+/* أيقونات حقول الإدخال */
+.input-box i{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:25px;
+}
+/* القائمة الخاصة باختيار نوع المستخدم */
+.role-select{
+    cursor:pointer;
+    appearance:auto;
+    -webkit-appearance:auto;
+    -moz-appearance:auto;
+}
+/*حقل رقم الهاتف*/
+/* ترتيب قائمة رمز الدولة مع رقم الهاتف */
+.phone-input-group{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+/* قائمة اختيار رمز الدولة */
+.phone-input-group .country-code-select{
+    width:100px;
+    height:56px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:#f5f7ff;
+    border:2px solid #d6dcff;
+    color:#333;
+    font-size:14px;
+    padding:0 10px;
+    transition:.3s;
+    cursor:pointer;
+    flex-shrink:0;
+}
+/* تأثير التركيز على قائمة رمز الدولة */
+.phone-input-group .country-code-select:focus{
+    border-color:black;
+    box-shadow:0 0 10px rgba(108,99,255,.25);
+}
+/* حقل إدخال رقم الهاتف */
+.phone-input-group input{
+    flex:1;
+    padding:0 45px 0 15px;
+}
+/* أيقونة الهاتف */
+.phone-input-group i{
+    left:15px;
+}
+/*زر تسجيل الدخول*/
+/*تنسيق الزر*/
+.btn{
+    width:65%;
+    height:50px;
+    border:none;
+    border-radius:12px;
+    background:#e7e8eb;
+    color:black;
+    font-size:18px;
+    font-family: "Cairo", sans-serif;
+    cursor:pointer;
+    transition:.3s;
+    margin-top:10px;
+}
+
+/* تأثير المرور على الزر */
+.btn:hover{
+    background: var(--primary-dark);
+    transform:translateY(-2px);
+}
+/* تنسيق الفقرات داخل النموذج */
+form p{
+    margin-top:15px;
+    margin-bottom:10px;
+}
+/************************************************************/
+/* لوحة الترحيب*/
+
+/* الحاوية الخارجية للوحة الترحيب */
+.toggle-box{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+}
+/* الخلفية المتحركة بين النموذجين */
+.toggle-box::before{
+    content:"";
+    position:absolute;
+    width:300%;
+    height:100%;
+    left:-250%;
+    background:#d6dcff;
+    border-radius:150px;
+    transition:1.5s ease-in-out;
+}
+/* تحريك الخلفية عند التبديل */
+.container.active .toggle-box::before{
+    left:50%;
+}
+/* اللوحة التي تحتوي على النصوص والأزرار */
+.toggle-panel{
+    position:absolute;
+    width:50%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    text-align:center;
+    padding:var(--radius-lg);
+    pointer-events:auto;
+    z-index:6;
+}
+/* عنوان لوحة الترحيب */
+.toggle-panel h1{
+    margin-bottom:15px;
+    color:#6b6868;
+}
+/* وصف لوحة الترحيب */
+.toggle-panel p{
+    margin-bottom:20px;
+    color:#6b6868;
+}
+/* إعداد الحركة الخاصة باللوحتين */
+.toggle-left,
+.toggle-right{
+    transition:transform .6s ease-in-out, opacity .6s ease-in-out;
+}
+/* اللوحة اليسرى */
+.toggle-left{
+    left:0;
+    transform:translateX(0);
+    opacity:1;
+}
+/* إخفاء اللوحة اليسرى عند التبديل */
+.container.active .toggle-left{
+    transform:translateX(-100%);
+    opacity:0;
+}
+/* اللوحة اليمنى */
+.toggle-right{
+    left:100%;
+    transform:translateX(0);
+    opacity:0;
+}
+/* إظهار اللوحة اليمنى */
+.container.active .toggle-right{
+    left:0;
+    transform:translateX(0);
+    opacity:1;
+}
+/*********************************************************/
+/*تصميم متجاوب للشاشات الصغيرة*/
+@media(max-width:768px){
+    /* جعل الحاوية بكامل الشاشة */
+    .container{
+        width:100%;
+        height:100vh;
+        border-radius:0;
+    }
+    /* تعديل حجم النماذج */
+    .form-box{
+        width:100%;
+        height:70%;
+        right:0;
+        bottom:0;
+    }
+    .container.active .form-box{
+        right:0;
+    }
+    /* تعديل لوحة الترحيب */
+    .toggle-panel{
+        width:100%;
+        height:30%;
+    }
+    /* إعادة تموضع اللوحة اليسرى */
+    .toggle-left{
+        top:0;
+        right:0;
+        left:auto;
+    }
+    /* إعادة تموضع اللوحة اليمنى */
+    .toggle-right{
+        right:0;
+        top:-30%;
+        left:auto;
+    }
+    .container.active .toggle-right{
+        top:0;
+    }
+    .container.active .toggle-left{
+        top:-30%;
+        right:0;
+        left:auto;
+    }
+    /* تعديل حركة الخلفية في وضع الهاتف */
+    .toggle-box::before{
+        width:100%;
+        height:300%;
+        left:0;
+        top:-250%;
+        border-radius:80px;
+    }
+    .container.active .toggle-box::before{
+        top:70%;
+        left:0;
+    }
+}

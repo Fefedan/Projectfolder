@@ -1,0 +1,209 @@
+<!-- =========================================
+     صفحة "من نحن" - منصة حجزي
+     تعرض معلومات عن المنصة ورسالتها ورؤيتها
+     بالإضافة إلى وسائل التواصل وروابط الموقع.
+     ========================================= -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <meta name="description" content="تعرف على منصة حجزي - منصة إلكترونية لحجز الخدمات"><!-- وصف الصفحة لمحركات البحث -->
+    <title>من نحن - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="auth-state.js"></script><!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+</head>
+<body>
+    <!------------------------------------------------------------------------------>
+    <!-- شريط التنقل الرئيسي للموقع -->
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.png" alt="حجزي">
+
+            </a>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-calendar-check"></i> حجوزاتي
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <!------------------------------------------------------------------------------>
+    <!-- القائمة الجانبية المنسدلة للأجهزة المحمولة -->
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <!-- القسم الرئيسي الذي يعرض عنوان الصفحة ووصفها -->
+    <!-- Hero Section -->
+    <section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="hero-content">
+            <h1 class="hero-title"><i class="fas fa-info-circle"></i> من نحن</h1>
+            <p class="hero-subtitle">تعرف على منصة حجزي وخدماتنا المميزة</p>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- قسم التعريف بالمنصة وقصتها والخدمات التي تقدمها -->
+    <!-- About Content -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">قصتنا</h2>
+            <p class="section-subtitle">منصة حجزي هي منصة إلكترونية رائدة تهدف إلى تسهيل عملية الحجز للخدمات المختلفة في المملكة العربية السعودية</p>
+        </div>
+        <div class="cards-container">
+            <div class="cards-grid">
+                <div class="modern-card hover-lift">
+                    <div class="card-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="card-title">أمان وثقة</h3>
+                    <p class="card-description">نضمن لك تجربة حجز آمنة وموثوقة مع مقدمي الخدمات المعتمدين</p>
+                </div>
+                <div class="modern-card hover-lift">
+                    <div class="card-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="card-title">سرعة وسهولة</h3>
+                    <p class="card-description">احجز خدماتك المفضلة في دقائق معدودة بسهولة تامة</p>
+                </div>
+                <div class="modern-card hover-lift">
+                    <div class="card-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="card-title">دعم متواصل</h3>
+                    <p class="card-description">فريق دعم متاح على مدار الساعة للإجابة على استفساراتك</p>
+                </div>
+                <div class="modern-card hover-lift">
+                    <div class="card-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="card-title">جودة عالية</h3>
+                    <p class="card-description">نختار أفضل مقدمي الخدمات لضمان تجربة استثنائية</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- قسم الرسالة والرؤية الخاصة بمنصة حجزي -->
+    <!-- Mission & Vision -->
+    <section class="section" style="background: linear-gradient(135deg, #f5f7ff 0%, #dfe4ff 100%);">
+        <!-- بطاقات تعرض أبرز مميزات منصة حجزي -->
+        <div class="cards-grid" style="max-width: 1200px; margin: 0 auto;">
+            <div class="modern-card">
+                <div class="card-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3 class="card-title">رسالتنا</h3>
+                <p class="card-description">توفير منصة حجز متكاملة وسهلة الاستخدام تربط بين المستخدمين ومقدمي الخدمات المتميزين في المملكة</p>
+            </div>
+            <div class="modern-card">
+                <div class="card-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h3 class="card-title">رؤيتنا</h3>
+                <p class="card-description">أن نكون الخيار الأول والأمثل لحجز الخدمات في المملكة العربية السعودية</p>
+            </div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- قسم معلومات التواصل مع إدارة المنصة -->
+    <!-- Contact Info -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">تواصل معنا</h2>
+            <p class="section-subtitle">نسعد بتواصلك معنا في أي وقت</p>
+        </div>
+        <div class="cards-grid" style="max-width: 800px; margin: 0 auto;">
+            <div class="modern-card">
+                <div class="card-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 class="card-title">البريد الإلكتروني</h3>
+                <p class="card-description">info@hazzi.sa</p>
+            </div>
+            <div class="modern-card">
+                <div class="card-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h3 class="card-title">الهاتف</h3>
+                <p class="card-description">966XXXXXXXXX+</p>
+            </div>
+            <div class="modern-card">
+                <div class="card-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3 class="card-title">العنوان</h3>
+                <p class="card-description">المملكة العربية السعودية</p>
+            </div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- تذييل الصفحة ويحتوي على روابط ومعلومات التواصل -->
+    <!-- Modern Footer -->
+    <footer class="modern-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>منصة حجزي</h3>
+                <p>منصة إلكترونية رائدة لحجز الفنادق والمطاعم والنوادي الرياضية والصالونات النسائية بسهولة وأمان.</p>
+               
+            </div>
+            <div class="footer-section">
+                <h3>روابط سريعة</h3>
+                <ul class="footer-links">
+                    <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                    <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                    <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>خدماتنا</h3>
+                <ul class="footer-links">
+             <li><i class="fas fa-utensils"></i> خدمات الضيافة</a></li>
+                    <li><i class="fas fa-hotel"></i> خدمات الإقامة</a></li>
+                    <li><i class="fas fa-dumbbell"></i> خدمات اللياقة</a></li>
+                    <li><i class="fas fa-spa"></i> خدمات التجميل</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>تواصل معنا</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-envelope"></i> info@hazzi.sa</li>
+                    <li><i class="fas fa-phone"></i>009665611747</li>
+                    <li><i class="fas fa-map-marker-alt"></i> المملكة العربية السعودية</li>
+                </ul>
+            </div>
+        </div>
+       
+    </footer>
+    <!-- تحميل ملف JavaScript المسؤول عن الوظائف العامة للموقع
+     مثل القائمة المتجاوبة والتنقل بين الصفحات -->
+
+    <script src="script.js"></script>
+</body>
+</html>

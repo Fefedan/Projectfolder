@@ -1,0 +1,250 @@
+<!-- =====================================================
+     صفحة الحجز
+     تتيح للمستخدم إدخال بيانات الحجز الخاصة بالخدمة
+     المختارة، واختيار تاريخ الحجز وطريقة الدفع،
+     ثم تأكيد عملية الحجز بعد التحقق من تسجيل الدخول
+     واستكمال البيانات المطلوبة.
+===================================================== -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8" /><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <meta name="description" content="صفحة الحجز - منصة حجزي"><!-- وصف الصفحة لمحركات البحث -->
+    <title>صفحة الحجز - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="modern-style.css" /><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="auth-state.js"></script><!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+</head>
+<body>
+<!------------------------------------------------------------------------------>
+    <!-- شريط التنقل الرئيسي للموقع -->
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.svg" alt="حجزي">
+                 
+            </a>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-calendar-check"></i> حجوزاتي
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <!------------------------------------------------------------------------------>
+    <!-- القائمة الجانبية المنسدلة للأجهزة المحمولة -->
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <!-- واجهة ترحيبية تعرض عنوان صفحة الحجز -->
+    <!-- Hero Section -->
+    <section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 50vh;">
+        <div class="hero-content">
+            <h1 class="hero-title"><i class="fas fa-calendar-check"></i> تفاصيل الحجز</h1>
+            <p class="hero-subtitle">أكمل بياناتك لتأكيد الحجز</p>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+    <!-- Booking Form Section --><!-- نموذج إدخال بيانات الحجز -->
+    <section class="section">
+        <div class="cards-grid" style="max-width: 600px; margin: 0 auto;">
+            <div class="modern-card">
+                <div class="card-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3 class="card-title">تفاصيل الخدمة</h3>
+                <p id="title" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;"></p>
+                <p id="price" style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1.5rem;"></p>
+                
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb;">
+                
+                <h3 class="card-title" style="font-size: 1.3rem;"><i class="fas fa-user"></i> بيانات العميل</h3>
+                
+                <form id="bookingForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="position: relative;">
+                        <i class="fas fa-user" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                        <!-- إدخال اسم العميل -->
+                        <input id="name" class="input-field" placeholder="الاسم الكامل" required style="width: 100%; padding: 1rem 45px 1rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-lg); font-family: 'Tajawal', sans-serif;">
+                    </div>
+                    
+                    <div style="position: relative;">
+                        <i class="fas fa-calendar" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                       <!-- اختيار تاريخ الحجز -->
+                        <input type="date" id="date" class="input-field" required style="width: 100%; padding: 1rem 45px 1rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-lg); font-family: 'Tajawal', sans-serif;">
+                    </div>
+                    
+                    <div style="position: relative;">
+                        <i class="fas fa-credit-card" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                        <!-- اختيار طريقة الدفع -->
+                        <select id="payment" class="input-field" onchange="toggleCard()" style="width: 100%; padding: 1rem 45px 1rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-lg); font-family: 'Tajawal', sans-serif;">
+                            <option value="cash">دفع عند الوصول</option>
+                            <option value="card">بطاقة بنكية</option>
+                        </select>
+                    </div>
+                    <!-- تظهر بيانات البطاقة فقط عند اختيار الدفع الإلكتروني -->
+                    <div id="cardBox" class="hidden" style="display: none; padding: 1.5rem; background: #f8fafc; border-radius: var(--radius-lg);">
+                        <div style="position: relative; margin-bottom: 1rem;">
+                            <i class="fas fa-credit-card" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                            <input class="input-field" placeholder="رقم البطاقة" style="width: 100%; padding: 1rem 45px 1rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-lg); font-family: 'Tajawal', sans-serif;">
+                        </div>
+                        <div style="position: relative; margin-bottom: 1rem;">
+                            <i class="fas fa-user" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                            <input class="input-field" placeholder="اسم البطاقة" style="width: 100%; padding: 1rem 45px 1rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-lg); font-family: 'Tajawal', sans-serif;">
+                        </div>
+                        <div style="position: relative;">
+                            <i class="fas fa-shield-lock" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                            <input class="input-field" placeholder="CVV" style="width: 100%; padding: 1rem 45px 1rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-lg); font-family: 'Tajawal', sans-serif;">
+                        </div>
+                    </div>
+                    <!-- تنفيذ عملية تأكيد الحجز -->
+                    <button type="button" onclick="confirm()" class="card-btn"><i class="fas fa-check-circle"></i> تأكيد الحجز</button>
+                </form>
+            </div>
+        </div>
+    </section>
+    <!------------------------------------------------------------------------------>
+
+    <!-- Modern Footer --><!-- تذييل الموقع ويحتوي على معلومات وروابط مهمة -->
+    <footer class="modern-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>منصة حجزي</h3>
+                <p>منصة إلكترونية رائدة لحجز الفنادق والمطاعم والنوادي الرياضية والصالونات النسائية بسهولة وأمان.</p>
+                
+            </div>
+            <div class="footer-section">
+                <h3>روابط سريعة</h3>
+                <ul class="footer-links">
+                    <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                    <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                    <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>خدماتنا</h3>
+                <ul class="footer-links">
+                    <li><a href="resturantPage.html"><i class="fas fa-utensils"></i> خدمات الضيافة</a></li>
+                    <li><a href="hotelsPage.html"><i class="fas fa-hotel"></i> خدمات الإقامة</a></li>
+                    <li><a href="gymPage.html"><i class="fas fa-dumbbell"></i> خدمات اللياقة</a></li>
+                    <li><a href="salonPage.html"><i class="fas fa-spa"></i> خدمات التجميل</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>تواصل معنا</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-envelope"></i> info@hazzi.sa</li>
+                    <li><i class="fas fa-phone"></i> 966XXXXXXXXX+</li>
+                    <li><i class="fas fa-map-marker-alt"></i> المملكة العربية السعودية</li>
+                </ul>
+            </div>
+        </div>
+        
+    </footer>
+
+    <!-- <script>
+        const params = new URLSearchParams(location.search);
+        const type = params.get("type");
+        const id = params.get("id");
+        const item = params.get("item");
+        const plan = params.get("plan");
+
+        const title = item ? `${item}` : "تفاصيل الحجز";
+        const price = plan ? `${plan}` : "حسب الخدمة";
+
+        document.getElementById("title").textContent = title;
+        document.getElementById("price").textContent = price;
+
+        function toggleCard() {
+            const v = document.getElementById("payment").value;
+            document.getElementById("cardBox").style.display = (v === "card") ? "block" : "none";
+        }
+
+        function confirm() {
+            const booking = {
+                id: Date.now(),
+                type,
+                idService: id,
+                item,
+                plan,
+                name: document.getElementById("name").value,
+                date: document.getElementById("date").value,
+                payment: document.getElementById("payment").value,
+                status: "confirmed"
+            };
+
+            let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+            bookings.push(booking);
+            localStorage.setItem("bookings", JSON.stringify(bookings));
+
+            alert("تم تأكيد الحجز بنجاح ✅");
+
+            location.href = "dashboard.html";
+        }
+
+        // Navbar Scroll Effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile Menu Toggle
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            });
+        });
+    </script> -->
+    <script>
+        // تنفيذ الكود بعد اكتمال تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function () {
+            // قراءة بيانات المستخدم المسجل من LocalStorage
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+           // التحقق من وجود مستخدم مسجل الدخول
+            if (!currentUser) {
+                // عرض رسالة للمستخدم بضرورة تسجيل الدخول
+                alert('يجب تسجيل الدخول للوصول إلى صفحة الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
+                window.location.href = 'home.html';
+            }
+        });
+    </script>
+</body>
+</html>

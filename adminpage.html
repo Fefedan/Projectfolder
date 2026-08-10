@@ -1,0 +1,1141 @@
+<!-- =====================================================
+     صفحة مدير النظام (Admin Dashboard)
+     تتيح لمدير النظام إدارة المنصة ومتابعة التقارير
+     والموافقة على الخدمات والحجوزات والعروض وإدارة
+     الإشعارات والإعدادات.
+===================================================== -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <meta name="description" content="لوحة مدير النظام - منصة حجزي"><!-- وصف الصفحة لمحركات البحث -->
+    <title>لوحة مدير النظام - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- إعداد الاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script>
+    <!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+    <script src="auth-state.js"></script>
+</head>
+<body class="dashboard-page">
+    <!------------------------------------------------------------------------------>
+    <!-- Dynamic Navbar --><!-- شريط التنقل الرئيسي الخاص بالموقع -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.png" alt="حجزي">
+
+            </a>
+            <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="adminpage.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-cog"></i> لوحة التحكم
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+                <!------------------------------------------------------------------------------>
+                <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <!------------------------------------------------------------------------------>
+    <!-- القائمة الجانبية المنسدلة للأجهزة المحمولة -->
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="adminpage.html"><i class="fas fa-cog"></i> لوحة التحكم</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- Dashboard Layout --><!-- تخطيط لوحة تحكم مدير النظام -->
+    <div class="dashboard-layout">
+        <!-- Sidebar --><!-- القائمة الجانبية التي تحتوي على أقسام لوحة التحكم -->
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+            <div class="user-info">
+                <h3>مدير النظام</h3>
+                <p>لوحة تحكم الإدارة</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection(event, 'reports')"><i class="fas fa-chart-line"></i> التقارير والإحصائيات</a>
+                <li><a href="#" class="active" onclick="showSection(event, 'Services')"><i class="fas fa-cog"></i> إدارة المستخدمين</a></li>
+                <li><a href="all-services.html"><i class="fas fa-store"></i> جميع الخدمات على المنصة</a></li>
+                </li>
+                <li><a href="#" onclick="showSection(event, 'notificationsprovider')"><i class="fas fa-bell"></i> الإشعارات
+                        العامة</a></li>
+                <li><a href="#" onclick="showSection(event, 'settings')"><i class="fas fa-cog"></i> الإعدادات</a>
+                </li>
+            </ul>
+            <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+        </aside>
+        <!------------------------------------------------------------------------------>
+        <!-- المحتوى الرئيسي للوحة التحكم -->
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Reports Section --><!-- قسم التقارير والإحصائيات الخاصة بالمنصة -->
+            <div id="reports" class="section-content active">
+                <div class="section-header" style="text-align: right; margin-bottom: 1.5rem;">
+                    <h2 style="margin-bottom: 0.5rem;">التقارير والإحصائيات</h2>
+                    <p class="section-subtitle" style="margin: 0; max-width: none;">ملخص شامل لأداء المنصة ومتابعة جميع العمليات اليومية.</p>
+                </div>
+
+                <div id="reportsStatsGrid" class="stats-grid report-stats-grid"></div>
+
+                <div class="report-panels">
+                    <div class="modern-card report-panel">
+                        <div class="report-panel-header">
+                            <h3>الأداء العام للمنصة</h3>
+                            <span class="status-badge status-confirmed">محدث لحظياً</span>
+                        </div>
+                        <div id="platformPerformanceList" class="report-list"></div>
+                    </div>
+
+                    <div class="modern-card report-panel">
+                        <div class="report-panel-header">
+                            <h3>أحدث الأنشطة</h3>
+                            <span class="status-badge status-pending">آخر التحديثات</span>
+                        </div>
+                        <div id="recentActivitiesList" class="activity-list"></div>
+                    </div>
+                </div>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- Services Review Section --><!-- قسم مراجعة واعتماد الخدمات والحجوزات والعروض -->
+            <div id="Services" class="section-content">
+                <div class="modern-card" style="margin-bottom: 1.5rem;">
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <!-- عرض جميع الحجوزات الجديدة بانتظار موافقة المدير -->
+                        <h2 style="margin-bottom: 0.5rem;">الحجوزات بانتظار الموافقة</h2>
+                        <p class="section-subtitle">راجع طلبات الحجوزات الجديدة من العملاء.</p>
+                    </div>
+                    <div id="pendingBookingsList" class="service-list"></div>
+                </div>
+
+                <div class="modern-card" style="margin-bottom: 1.5rem;">
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <!-- عرض الخدمات المرسلة من مقدمي الخدمات لاعتمادها -->
+                        <h2 style="margin-bottom: 0.5rem;">الخدمات بانتظار الموافقة</h2>
+                        <p class="section-subtitle">راجع طلبات مقدمي الخدمات وافتح قبول أو رفض لكل خدمة.</p>
+                    </div>
+                    <div id="pendingServicesList" class="service-list"></div>
+                </div>
+                
+                <div class="modern-card" style="margin-bottom: 1.5rem;">
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <!-- عرض العروض الجديدة للموافقة أو الرفض -->
+                        <h2 style="margin-bottom: 0.5rem;">العروض بانتظار الموافقة</h2>
+                        <p class="section-subtitle">راجع طلبات العروض الجديدة من مقدمي الخدمات وقم بقبولها أو رفضها.</p>
+                    </div>
+                    <div id="pendingOffersList" class="service-list"></div>
+                </div>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- users Section --><!-- قسم إدارة المستخدمين ومقدمي الخدمات -->
+            <div id="users" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">إدارة المستخدمين</h2>
+                <div class="cards-grid">
+                    <div class="modern-card">
+                        <h3 class="card-title">العملاء</h3>
+                        <div class="table-container">
+
+                            <table class="users-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>الاسم</th>
+                                        <th>البريد الإلكتروني</th>
+                                        <th>رقم الهاتف</th>
+                                        <th>عدد الحجوزات</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="usersTable">
+
+                                    <tr data-user-id="1">
+                                        <td>محمد أحمد</td>
+                                        <td>mohamed@gmail.com</td>
+                                        <td>0501234567</td>
+                                        <td>8</td>
+
+                                        <td>
+                                            <span class="status active">نشط</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewUser(1)">عرض</button>
+                                            <button class="btn-disable" onclick="toggleUserStatus(1)">تعطيل</button>
+                                            <button class="btn-delete" onclick="deleteUser(1)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-user-id="2">
+                                        <td>سارة خالد</td>
+                                        <td>sara@gmail.com</td>
+                                        <td>0559876543</td>
+                                        <td>3</td>
+
+                                        <td>
+                                            <span class="status inactive">معطل</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewUser(2)">عرض</button>
+                                            <button class="btn-disable" onclick="toggleUserStatus(2)">تفعيل</button>
+                                            <button class="btn-delete" onclick="deleteUser(2)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-user-id="3">
+                                        <td>أحمد محمد</td>
+                                        <td>ahmed@gmail.com</td>
+                                        <td>0541234567</td>
+                                        <td>15</td>
+
+                                        <td>
+                                            <span class="status active">نشط</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewUser(3)">عرض</button>
+                                            <button class="btn-disable" onclick="toggleUserStatus(3)">تعطيل</button>
+                                            <button class="btn-delete" onclick="deleteUser(3)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-user-id="4">
+                                        <td>فاطمة علي</td>
+                                        <td>fatima@gmail.com</td>
+                                        <td>0569876543</td>
+                                        <td>5</td>
+
+                                        <td>
+                                            <span class="status active">نشط</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewUser(4)">عرض</button>
+                                            <button class="btn-disable" onclick="toggleUserStatus(4)">تعطيل</button>
+                                            <button class="btn-delete" onclick="deleteUser(4)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    <!-- جدول بيانات مقدمي الخدمات -->
+                    <div class="modern-card">
+                        <h3 class="card-title">مقدمي الخدمات</h3>
+                        <div class="table-container">
+
+                            <table class="providers-table">
+                                <thead>
+                                    <tr>
+                                        <th>الاسم</th>
+                                        <th>إسم المنشأة</th>
+                                        <th>نوع النشاط</th>
+                                        <th>رقم الهاتف</th>
+                                        <th>عدد الخدمات</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="providersTable">
+
+                                    <tr data-provider-id="1">
+                                        <td>محمد أحمد</td>
+                                        <td>صالون النخبة</td>
+                                        <td>صالون نسائي</td>
+                                        <td>0501234567</td>
+                                        <td>8</td>
+
+                                        <td>
+                                            <span class="status active">نشط</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewProvider(1)">عرض</button>
+                                            <button class="btn-edit" onclick="editProvider(1)">تعديل</button>
+                                            <button class="btn-disable" onclick="toggleProviderStatus(1)">تعطيل</button>
+                                            <button class="btn-delete" onclick="deleteProvider(1)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-provider-id="2">
+                                        <td>سارة خالد</td>
+                                        <td>مطعم الأصالة</td>
+                                        <td>مطعم</td>
+                                        <td>0559876543</td>
+                                        <td>3</td>
+
+                                        <td>
+                                            <span class="status inactive">معطل</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewProvider(2)">عرض</button>
+                                            <button class="btn-disable" onclick="toggleProviderStatus(2)">تفعيل</button>
+                                            <button class="btn-delete" onclick="deleteProvider(2)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-provider-id="3">
+                                        <td>خالد عمر</td>
+                                        <td>فندق الريان</td>
+                                        <td>فندق</td>
+                                        <td>0537654321</td>
+                                        <td>12</td>
+
+                                        <td>
+                                            <span class="status active">نشط</span>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn-view" onclick="viewProvider(3)">عرض</button>
+                                            <button class="btn-edit" onclick="editProvider(3)">تعديل</button>
+                                            <button class="btn-disable" onclick="toggleProviderStatus(3)">تعطيل</button>
+                                            <button class="btn-delete" onclick="deleteProvider(3)">حذف</button>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- Settings Section --><!-- قسم إعدادات حساب مدير النظام -->
+            <div id="settings" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">الإعدادات</h2>
+                <div class="modern-card">
+                    <form id="adminSettingsForm" style="display: flex; flex-direction: column; gap: 1rem;" onsubmit="return saveAdminSettings(event);">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">البريد الإلكتروني</label>
+                            <input id="settingsEmail" name="email" type="email" readonly required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); background: #f9fafb;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">كلمة المرور الجديدة</label>
+                            <input id="settingsPassword" name="password" type="password" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">تأكيد كلمة المرور</label>
+                            <input id="settingsConfirmPassword" name="confirmPassword" type="password" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                        </div>
+                        <button type="submit" class="card-btn"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                    </form>
+                </div>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- General Notifications Section --><!-- قسم الإشعارات العامة الخاصة بمدير النظام -->
+            <div id="notificationsprovider" class="section-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0;">الإشعارات العامة</h2>
+                    <button class="btn-delete" onclick="clearAllAdminNotifications()" style="padding: 0.5rem 1rem; border: none; border-radius: var(--radius-md); cursor: pointer;"><i class="fas fa-trash-alt"></i> مسح الكل</button>
+                </div>
+                <div id="adminNotificationsList" class="service-list"></div>
+            </div>
+
+        </main>
+    </div>
+    <!------------------------------------------------------------------------------>
+<!-- تحميل الوظائف العامة المشتركة بين صفحات الموقع -->
+    <script src="script.js"></script>
+    <script>
+        // تخزين بيانات مدير النظام الحالي
+        let currentAdminUser = null;
+
+        // تعبئة نموذج إعدادات المدير بالبيانات الحالية
+        function populateAdminSettingsForm() {
+            const emailInput = document.getElementById('settingsEmail');
+            if (emailInput && currentAdminUser?.email) {
+                emailInput.value = currentAdminUser.email;
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // حفظ إعدادات المدير بعد التحقق من صحة البيانات
+        function saveAdminSettings(event) {
+            event.preventDefault();
+
+            const emailInput = document.getElementById('settingsEmail');
+            const passwordInput = document.getElementById('settingsPassword');
+            const confirmPasswordInput = document.getElementById('settingsConfirmPassword');
+
+            if (!emailInput || !passwordInput || !confirmPasswordInput) return false;
+
+            const emailValue = emailInput.value.trim();
+            const passwordValue = passwordInput.value;
+            const confirmPasswordValue = confirmPasswordInput.value;
+
+            if (!emailValue || !passwordValue || !confirmPasswordValue) {
+                alert('جميع الحقول مطلوبة');
+                return false;
+            }
+
+            if (passwordValue !== confirmPasswordValue) {
+                alert('كلمة المرور وتأكيد كلمة المرور غير متطابقتين');
+                confirmPasswordInput.focus();
+                return false;
+            }
+
+            alert('تم حفظ التغييرات بنجاح');
+            passwordInput.value = '';
+            confirmPasswordInput.value = '';
+            return false;
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // تنفيذ العمليات الأساسية بعد تحميل الصفحة
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || currentUser.role !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentAdminUser = currentUser;
+            populateAdminSettingsForm();
+            await loadPendingBookings();
+            await loadPendingServices();
+            await loadPendingOffers();
+            await loadAdminNotifications();
+            await loadAdminReports();
+        });
+        //////////////////////////////////////////////////////////////////////////////////
+        // تحميل تقارير وإحصائيات المنصة
+        async function loadAdminReports() {
+            const statsGrid = document.getElementById('reportsStatsGrid');
+            const performanceList = document.getElementById('platformPerformanceList');
+            const activityList = document.getElementById('recentActivitiesList');
+
+            if (!statsGrid || !performanceList || !activityList) return;
+
+            statsGrid.innerHTML = '<div class="modern-card report-loading-card">جاري تحميل التقارير...</div>';
+
+            try {
+                const supabase = getSupabase();
+                if (!supabase) throw new Error('Supabase client not initialized');
+
+                const getSafeCount = async (table, statusValue = null) => {
+                    try {
+                        let query = supabase.from(table).select('id', { count: 'exact', head: true });
+                        if (statusValue) {
+                            query = query.eq('status', statusValue);
+                        }
+                        const { count, error } = await query;
+                        if (error) throw error;
+                        return count || 0;
+                    } catch (error) {
+                        console.warn(`Unable to load count for ${table}:`, error);
+                        return 0;
+                    }
+                };
+
+                const [userCount, serviceCount, pendingCount, approvedCount, bookingCount, offersCount] = await Promise.all([
+                    getSafeCount('users'),
+                    getSafeCount('services'),
+                    getSafeCount('services', 'pending'),
+                    getSafeCount('services', 'approved'),
+                    getSafeCount('bookings'),
+                    getSafeCount('offers')
+                ]);
+
+                const notificationsResponse = await NotificationsDB.getByUser(currentAdminUser?.id).catch(() => []);
+                const unreadNotificationsCount = Array.isArray(notificationsResponse)
+                    ? notificationsResponse.filter(item => item.status === 'unread').length
+                    : 0;
+                let allServices = [];
+                try {
+                    const { data, error } = await supabase.from('services')
+                        .select('id, service_type, status, created_at, provider_id, description, location, price, duration, working_days, working_hours')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    allServices = Array.isArray(data) ? data : [];
+                } catch (error) {
+                    console.warn('Unable to load services for reports:', error);
+                }
+
+                const serviceTypeStats = allServices.reduce((acc, item) => {
+                    const key = item.service_type || 'غير محدد';
+                    acc[key] = (acc[key] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const topServiceTypes = Object.entries(serviceTypeStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 4);
+
+                const approvalRate = serviceCount > 0 ? Math.round((approvedCount / serviceCount) * 100) : 0;
+                const pendingServicesCount = pendingCount || 0;
+
+                statsGrid.innerHTML = `
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon"><i class="fas fa-users"></i></div>
+                        <div class="report-card-content">
+                            <h3>${userCount}</h3>
+                            <p>إجمالي المستخدمين</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon accent"><i class="fas fa-store"></i></div>
+                        <div class="report-card-content">
+                            <h3>${serviceCount}</h3>
+                            <p>إجمالي الخدمات</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon success"><i class="fas fa-calendar-check"></i></div>
+                        <div class="report-card-content">
+                            <h3>${bookingCount}</h3>
+                            <p>إجمالي الحجوزات</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon warning"><i class="fas fa-bell"></i></div>
+                        <div class="report-card-content">
+                            <h3>${unreadNotificationsCount}</h3>
+                            <p>الإشعارات غير المقروءة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon pink"><i class="fas fa-tags"></i></div>
+                        <div class="report-card-content">
+                            <h3>${offersCount}</h3>
+                            <p>إجمالي العروض</p>
+                        </div>
+                    </div>
+                    
+                `;
+
+                performanceList.innerHTML = topServiceTypes.length > 0 ? topServiceTypes.map(([name, count]) => {
+                    const percent = serviceCount > 0 ? Math.round((count / serviceCount) * 100) : 0;
+                    return `
+                        <div class="report-row">
+                            <div class="report-row-head">
+                                <span>${name}</span>
+                                <strong>${count} خدمة</strong>
+                            </div>
+                            <div class="report-progress">
+                                <span style="width:${percent}%"></span>
+                            </div>
+                            <small>${percent}% من إجمالي الخدمات</small>
+                        </div>
+                    `;
+                }).join('') : '<div class="empty-state"><i class="fas fa-chart-bar"></i><p>لا توجد بيانات كافية بعد</p></div>';
+
+                let recentServices = [];
+                let recentBookings = [];
+                try {
+                    const { data: servicesData, error: servicesError } = await supabase.from('services')
+                        .select('id, service_type, status, created_at, provider_id, description')
+                        .order('created_at', { ascending: false })
+                        .limit(4);
+                    if (servicesError) throw servicesError;
+                    recentServices = Array.isArray(servicesData) ? servicesData : [];
+                } catch (error) {
+                    console.warn('Unable to load recent services:', error);
+                }
+
+                try {
+                    const { data: bookingsData, error: bookingsError } = await supabase.from('bookings')
+                        .select('id, created_at')
+                        .order('created_at', { ascending: false })
+                        .limit(4);
+                    if (bookingsError) throw bookingsError;
+                    recentBookings = Array.isArray(bookingsData) ? bookingsData : [];
+                } catch (error) {
+                    console.warn('Unable to load recent bookings:', error);
+                }
+
+                const activityItems = [
+                    ...recentServices.map(item => ({
+                        title: item.service_type || 'خدمة جديدة',
+                        subtitle: `الخدمة • ${item.status === 'approved' ? 'تمت الموافقة' : item.status === 'pending' ? 'بإنتظار المراجعة' : 'مرفوضة'}`,
+                        time: item.created_at
+                    })),
+                    ...recentBookings.map(item => ({
+                        title: 'حجز جديد',
+                        subtitle: `رقم الحجز ${item.id}`,
+                        time: item.created_at
+                    }))
+                ]
+                    .sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0))
+                    .slice(0, 8);
+
+                activityList.innerHTML = activityItems.length > 0 ? activityItems.map(item => `
+                    <div class="activity-item">
+                        <div class="activity-badge"><i class="fas fa-bolt"></i></div>
+                        <div class="activity-content">
+                            <h4>${item.title}</h4>
+                            <p>${item.subtitle}</p>
+                        </div>
+                        <span class="activity-time">${new Date(item.time || Date.now()).toLocaleDateString('ar-SA')}</span>
+                    </div>
+                `).join('') : '<div class="empty-state"><i class="fas fa-history"></i><p>لا توجد أنشطة حديثة بعد</p></div>';
+            } catch (error) {
+                console.error('Error loading admin reports:', error);
+                statsGrid.innerHTML = '<div class="modern-card report-loading-card">تعذر تحميل التقارير مؤقتاً. قد تكون هناك مشكلة في الاتصال بقاعدة البيانات.</div>';
+                performanceList.innerHTML = '<div class="empty-state">تعذر تحميل البيانات</div>';
+                activityList.innerHTML = '<div class="empty-state">تعذر تحميل الأنشطة</div>';
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // جلب الخدمات التي تنتظر موافقة مدير النظام
+
+        async function loadPendingServices() {
+            const container = document.getElementById('pendingServicesList');
+            if (!container) return;
+
+            try {
+                const services = await ServicesDB.getAll();
+                const pendingServices = Array.isArray(services) ? services.filter(service => service.status === 'pending') : [];
+                const pendingCount = document.getElementById('pendingServicesCount');
+                if (pendingCount) pendingCount.textContent = pendingServices.length;
+
+                const providerNames = {};
+                for (const service of pendingServices) {
+                    if (service.provider_id && !providerNames[service.provider_id]) {
+                        try {
+                            const provider = await UsersDB.getById(service.provider_id);
+                            providerNames[service.provider_id] = provider?.full_name || provider?.email || 'مقدم خدمة';
+                        } catch (error) {
+                            providerNames[service.provider_id] = 'مقدم خدمة';
+                        }
+                    }
+                }
+
+                if (pendingServices.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>لا توجد خدمات بانتظار الموافقة</p></div>';
+                    return;
+                }
+
+                container.innerHTML = pendingServices.map(service => `
+                    <div class="modern-card admin-service-card">
+                        <div class="service-item-header">
+                            <h3 class="card-title" style="margin:0;">${service.service_type || 'خدمة'}</h3>
+                            <span class="status-badge status-pending">قيد المراجعة</span>
+                        </div>
+                        <p class="card-description">${service.description || 'لا يوجد وصف'}</p>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-user"></i> مقدم الخدمة: ${providerNames[service.provider_id] || 'غير محدد'}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${service.location || 'غير محدد'}</span>
+                        </div>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-money-bill-wave"></i> ${service.price || 0} ر.س</span>
+                            <span><i class="fas fa-clock"></i> ${service.duration || 'غير محدد'}</span>
+                        </div>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-calendar-alt"></i> أيام العمل: ${service.working_days || 'غير محدد'}</span>
+                            <span><i class="fas fa-store"></i> الساعات: ${service.working_hours || 'غير محدد'}</span>
+                        </div>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-clock"></i> قدمت في: ${new Date(service.created_at || Date.now()).toLocaleString('ar-SA')}</span>
+                        </div>
+                        <div class="service-item-actions" style="margin-top: 1rem;">
+                            <button class="service-action-btn edit" onclick="approveService('${service.id}')"><i class="fas fa-check"></i></button>
+                            <button class="service-action-btn delete" onclick="rejectService('${service.id}')"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pending services:', error);
+                container.innerHTML = '<div class="empty-state">تعذر تحميل الخدمات من قاعدة البيانات.</div>';
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // جلب الحجوزات الجديدة بانتظار الموافقة
+
+        async function loadPendingBookings() {
+            const container = document.getElementById('pendingBookingsList');
+            if (!container) return;
+
+            try {
+                const { data: pendingBookings, error } = await getSupabase()
+                    .from('bookings')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+
+                if (!pendingBookings || pendingBookings.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>لا توجد حجوزات بانتظار الموافقة</p></div>';
+                    return;
+                }
+
+                const customerNames = {};
+                for (const booking of pendingBookings) {
+                    if (booking.customer_id && !customerNames[booking.customer_id]) {
+                        try {
+                            const customer = await UsersDB.getById(booking.customer_id);
+                            customerNames[booking.customer_id] = customer?.full_name || customer?.email || 'عميل';
+                        } catch (error) {
+                            customerNames[booking.customer_id] = 'عميل';
+                        }
+                    }
+                }
+
+                container.innerHTML = pendingBookings.map(booking => {
+                    const bookingDetails = booking.details ? JSON.parse(booking.details) : {};
+                    return `
+                    <div class="modern-card admin-service-card">
+                        <div class="service-item-header">
+                            <h3 class="card-title" style="margin:0;">${booking.booking_name || 'حجز جديد'}</h3>
+                            <span class="status-badge status-pending">قيد الانتظار</span>
+                        </div>
+                        <p class="card-description">${bookingDetails.service_name || booking.service_name || 'خدمة'}</p>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-user"></i> العميل: ${customerNames[booking.customer_id] || 'غير محدد'}</span>
+                            <span><i class="fas fa-calendar-alt"></i> التاريخ: ${booking.booking_date || booking.date || 'غير محدد'}</span>
+                        </div>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-clock"></i> الوقت: ${bookingDetails.time || booking.time || booking.booking_time || 'غير محدد'}</span>
+                            <span><i class="fas fa-phone"></i> الهاتف: ${bookingDetails.phone || booking.phone || 'غير محدد'}</span>
+                        </div>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-clock"></i> قدم في: ${new Date(booking.created_at || Date.now()).toLocaleString('ar-SA')}</span>
+                        </div>
+                        <div class="service-item-actions" style="margin-top: 1rem;">
+                            <button class="service-action-btn edit" onclick="approveBooking('${booking.id}')"><i class="fas fa-check"></i></button>
+                            <button class="service-action-btn delete" onclick="rejectBooking('${booking.id}')"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (error) {
+                console.error('Error loading pending bookings:', error);
+                container.innerHTML = '<div class="empty-state">تعذر تحميل الحجوزات من قاعدة البيانات.</div>';
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // جلب العروض الجديدة بانتظار اعتمادها
+
+        async function loadPendingOffers() {
+            const container = document.getElementById('pendingOffersList');
+            if (!container) return;
+
+            try {
+                const { data: pendingOffers, error } = await getSupabase()
+                    .from('offers')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+
+                if (!pendingOffers || pendingOffers.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>لا توجد عروض بانتظار الموافقة</p></div>';
+                    return;
+                }
+
+                const providerNames = {};
+                for (const offer of pendingOffers) {
+                    if (offer.provider_id && !providerNames[offer.provider_id]) {
+                        try {
+                            const provider = await UsersDB.getById(offer.provider_id);
+                            providerNames[offer.provider_id] = provider?.full_name || provider?.email || 'مقدم خدمة';
+                        } catch (error) {
+                            providerNames[offer.provider_id] = 'مقدم خدمة';
+                        }
+                    }
+                }
+
+                container.innerHTML = pendingOffers.map(offer => {
+                    const offerImage = offer.image_url ? escapeHtml(offer.image_url) : 'Images/logo.svg';
+                    return `
+                    <div class="modern-card admin-service-card">
+                        <div class="service-item-header">
+                            <h3 class="card-title" style="margin:0;">${offer.title || 'عرض خاص'}</h3>
+                            <span class="status-badge status-pending">قيد المراجعة</span>
+                        </div>
+                        ${offer.image_url ? `<img src="${offerImage}" alt="${escapeHtml(offer.title || 'عرض')}" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin:0.5rem 0;">` : ''}
+                        <p class="card-description">${offer.description || 'لا يوجد وصف'}</p>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-user"></i> مقدم الخدمة: ${providerNames[offer.provider_id] || 'غير محدد'}</span>
+                            <span><i class="fas fa-tags"></i> خصم: ${offer.discount_percentage || 0}%</span>
+                        </div>
+                        <div class="service-item-meta">
+                            <span><i class="fas fa-clock"></i> قدمت في: ${new Date(offer.created_at || Date.now()).toLocaleString('ar-SA')}</span>
+                            <span><i class="fas fa-calendar-alt"></i> صالح حتى: ${new Date(offer.end_date).toLocaleDateString('ar-SA')}</span>
+                        </div>
+                        <div class="service-item-actions" style="margin-top: 1rem;">
+                            <button class="service-action-btn edit" onclick="approveOffer('${offer.id}')"><i class="fas fa-check"></i></button>
+                            <button class="service-action-btn delete" onclick="rejectOffer('${offer.id}')"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (error) {
+                console.error('Error loading pending offers:', error);
+                container.innerHTML = '<div class="empty-state">تعذر تحميل العروض من قاعدة البيانات.</div>';
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // اعتماد العرض وإرسال إشعار لمقدم الخدمة
+
+        async function approveOffer(offerId) {
+            if (!offerId) return;
+            if (!confirm('هل تريد قبول هذا العرض؟')) return;
+
+            try {
+                const offer = await OffersDB.update(offerId, { status: 'active' });
+                const provider = await UsersDB.getById(offer.provider_id);
+
+                if (provider?.id) {
+                    await NotificationsDB.add({
+                        user_id: provider.id,
+                        type: 'system',
+                        title: 'تم قبول العرض',
+                        message: `تم قبول العرض "${offer.title}" بنجاح وسيتم عرضه للمستخدمين في الصفحة الرئيسية.`,
+                        status: 'unread'
+                    });
+                }
+
+                await loadPendingOffers();
+                await loadAdminNotifications();
+                alert('تم قبول العرض بنجاح');
+            } catch (error) {
+                console.error('Error approving offer:', error);
+                alert('تعذر قبول العرض');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // رفض العرض وإرسال إشعار لمقدم الخدمة
+
+        async function rejectOffer(offerId) {
+            if (!offerId) return;
+            if (!confirm('هل تريد رفض هذا العرض؟')) return;
+
+            try {
+                const offer = await OffersDB.update(offerId, { status: 'rejected' });
+                const provider = await UsersDB.getById(offer.provider_id);
+
+                if (provider?.id) {
+                    await NotificationsDB.add({
+                        user_id: provider.id,
+                        type: 'system',
+                        title: 'تم رفض العرض',
+                        message: `نأسف، تم رفض العرض "${offer.title}" من قبل الإدارة.`,
+                        status: 'unread'
+                    });
+                }
+
+                await loadPendingOffers();
+                await loadAdminNotifications();
+                alert('تم رفض العرض');
+            } catch (error) {
+                console.error('Error rejecting offer:', error);
+                alert('تعذر رفض العرض');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // اعتماد الحجز وإبلاغ العميل
+
+        async function approveBooking(bookingId) {
+            if (!bookingId) return;
+            if (!confirm('هل تريد قبول هذا الحجز؟')) return;
+
+            try {
+                const supabase = getSupabase();
+                const { data: booking, error } = await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', bookingId).select().single();
+                if (error) throw error;
+
+                const customer = await UsersDB.getById(booking.customer_id);
+                if (customer?.id) {
+                    await NotificationsDB.add({
+                        user_id: customer.id,
+                        type: 'booking',
+                        title: 'تم قبول الحجز',
+                        message: `تم قبول حجزك "${booking.booking_name}" بنجاح.`,
+                        status: 'unread'
+                    });
+                }
+
+                await loadPendingBookings();
+                await loadAdminNotifications();
+                alert('تم قبول الحجز بنجاح');
+            } catch (error) {
+                console.error('Error approving booking:', error);
+                alert('تعذر قبول الحجز');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // رفض الحجز وإبلاغ العميل
+
+        async function rejectBooking(bookingId) {
+            if (!bookingId) return;
+            if (!confirm('هل تريد رفض هذا الحجز؟')) return;
+
+            try {
+                const supabase = getSupabase();
+                const { data: booking, error } = await supabase.from('bookings').update({ status: 'rejected' }).eq('id', bookingId).select().single();
+                if (error) throw error;
+
+                const customer = await UsersDB.getById(booking.customer_id);
+                if (customer?.id) {
+                    await NotificationsDB.add({
+                        user_id: customer.id,
+                        type: 'booking',
+                        title: 'تم رفض الحجز',
+                        message: `نأسف، تم رفض حجزك "${booking.booking_name}".`,
+                        status: 'unread'
+                    });
+                }
+
+                await loadPendingBookings();
+                await loadAdminNotifications();
+                alert('تم رفض الحجز');
+            } catch (error) {
+                console.error('Error rejecting booking:', error);
+                alert('تعذر رفض الحجز');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // فتح القسم المرتبط بالإشعار وتحديث حالته إلى مقروء
+
+        async function handleAdminNotificationClick(notificationId, targetSection) {
+            await NotificationsDB.markAsRead(notificationId);
+            showSection(targetSection);
+            await loadPendingBookings(); // Load pending bookings to show the booking that needs approval
+            await loadAdminNotifications();
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // حذف إشعار واحد من قاعدة البيانات
+
+        async function deleteAdminNotification(notificationId) {
+            if (!notificationId) return;
+            if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
+            try {
+                const supabase = getSupabase();
+                const { error } = await supabase.from('notifications').delete().eq('id', notificationId);
+                if (error) throw error;
+                await loadAdminNotifications();
+            } catch (error) {
+                console.error('Failed to delete notification:', error);
+                alert('تعذر حذف الإشعار');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // حذف جميع إشعارات مدير النظام
+
+        async function clearAllAdminNotifications() {
+            const adminUser = currentAdminUser;
+            if (!adminUser || !adminUser.id) return;
+            if (!confirm('هل أنت متأكد من مسح جميع الإشعارات؟')) return;
+            try {
+                const supabase = getSupabase();
+                const { error } = await supabase.from('notifications').delete().eq('user_id', adminUser.id);
+                if (error) throw error;
+                await loadAdminNotifications();
+                alert('تم مسح جميع الإشعارات بنجاح');
+            } catch (error) {
+                console.error('Failed to clear all notifications:', error);
+                alert('تعذر مسح الإشعارات');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // تحميل جميع إشعارات مدير النظام
+
+        async function loadAdminNotifications() {
+            const container = document.getElementById('adminNotificationsList');
+            if (!container) return;
+
+            try {
+                const adminUser = currentAdminUser;
+                if (!adminUser || !adminUser.id) {
+                    container.innerHTML = '<div class="empty-state">يرجى تسجيل الدخول أولاً.</div>';
+                    return;
+                }
+
+                const notifications = await NotificationsDB.getByUser(adminUser.id);
+                const unreadCount = Array.isArray(notifications) ? notifications.filter(item => item.status === 'unread').length : 0;
+                const countElement = document.getElementById('adminNotificationsCount');
+                if (countElement) countElement.textContent = unreadCount;
+
+                if (!Array.isArray(notifications) || notifications.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>لا توجد إشعارات حالياً</p></div>';
+                    return;
+                }
+
+                container.innerHTML = notifications
+                    .slice()
+                    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+                    .map(notification => `
+                        <div class="modern-card admin-service-card" style="cursor: pointer;" onclick="handleAdminNotificationClick('${notification.id}', 'Services')">
+                            <div class="service-item-header">
+                                <h3 class="card-title" style="margin:0;">${notification.title || 'إشعار'}</h3>
+                                <span class="status-badge ${notification.status === 'unread' ? 'status-pending' : 'status-confirmed'}">${notification.status === 'unread' ? 'جديد' : 'مقروء'}</span>
+                            </div>
+                            <p class="card-description">${notification.message || ''}</p>
+                            <div class="service-item-meta" style="justify-content: space-between; align-items: center;">
+                                <span><i class="fas fa-clock"></i> ${new Date(notification.created_at || Date.now()).toLocaleString('ar-SA')}</span>
+                                <button type="button" class="btn-delete" onclick="event.stopPropagation(); deleteAdminNotification('${notification.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: none; cursor: pointer;"><i class="fas fa-trash-alt"></i> حذف</button>
+                            </div>
+                        </div>
+                    `)
+                    .join('');
+            } catch (error) {
+                console.error('Error loading admin notifications:', error);
+                container.innerHTML = '<div class="empty-state">تعذر تحميل الإشعارات.</div>';
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // اعتماد الخدمة وإرسال إشعار لمقدم الخدمة
+
+        async function approveService(serviceId) {
+            if (!serviceId) return;
+            if (!confirm('هل تريد قبول هذه الخدمة؟')) return;
+
+            try {
+                const updatePayload = {
+                    status: 'approved',
+                    reviewed_at: new Date().toISOString(),
+                    review_note: 'تمت الموافقة من الإدارة'
+                };
+
+                if (currentAdminUser?.id) {
+                    const { data: adminUserRows } = await getSupabase()
+                        .from('users')
+                        .select('id')
+                        .eq('id', currentAdminUser.id)
+                        .limit(1);
+
+                    if (Array.isArray(adminUserRows) && adminUserRows.length > 0) {
+                        updatePayload.reviewed_by = currentAdminUser.id;
+                    }
+                }
+
+                const service = await ServicesDB.update(serviceId, updatePayload);
+                const provider = await UsersDB.getById(service.provider_id);
+
+                if (provider?.id) {
+                    await NotificationsDB.add({
+                        user_id: provider.id,
+                        type: 'service',
+                        title: 'تم قبول الخدمة',
+                        message: `تم قبول خدمة "${service.service_type}" بنجاح وسيتم عرضها للمستخدمين.`,
+                        status: 'unread'
+                    });
+                }
+
+                if (currentAdminUser?.id) {
+                    await NotificationsDB.add({
+                        user_id: currentAdminUser.id,
+                        type: 'service',
+                        title: 'تم قبول الخدمة',
+                        message: `تم قبول خدمة "${service.service_type}" من قبل الإدارة.`,
+                        status: 'unread'
+                    });
+                }
+
+                await loadPendingServices();
+                await loadAdminNotifications();
+                alert('تم قبول الخدمة بنجاح');
+            } catch (error) {
+                console.error('Error approving service:', error);
+                alert('تعذر قبول الخدمة');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        // رفض الخدمة وإرسال إشعار لمقدم الخدمة
+
+        async function rejectService(serviceId) {
+            if (!serviceId) return;
+            if (!confirm('هل تريد رفض هذه الخدمة؟')) return;
+
+            try {
+                const updatePayload = {
+                    status: 'rejected',
+                    reviewed_at: new Date().toISOString(),
+                    review_note: 'تم الرفض من الإدارة'
+                };
+
+                if (currentAdminUser?.id) {
+                    const { data: adminUserRows } = await getSupabase()
+                        .from('users')
+                        .select('id')
+                        .eq('id', currentAdminUser.id)
+                        .limit(1);
+
+                    if (Array.isArray(adminUserRows) && adminUserRows.length > 0) {
+                        updatePayload.reviewed_by = currentAdminUser.id;
+                    }
+                }
+
+                const service = await ServicesDB.update(serviceId, updatePayload);
+                const provider = await UsersDB.getById(service.provider_id);
+
+                if (provider?.id) {
+                    const { data: providerRows } = await getSupabase()
+                        .from('users')
+                        .select('id')
+                        .eq('id', provider.id)
+                        .limit(1);
+
+                    if (Array.isArray(providerRows) && providerRows.length > 0) {
+                        await NotificationsDB.add({
+                            user_id: provider.id,
+                            type: 'service',
+                            title: 'تم رفض الخدمة',
+                            message: `تم رفض خدمة "${service.service_type}" من قبل الإدارة.`,
+                            status: 'unread'
+                        });
+                    }
+                }
+
+                if (currentAdminUser?.id) {
+                    const { data: adminRows } = await getSupabase()
+                        .from('users')
+                        .select('id')
+                        .eq('id', currentAdminUser.id)
+                        .limit(1);
+
+                    if (Array.isArray(adminRows) && adminRows.length > 0) {
+                        await NotificationsDB.add({
+                            user_id: currentAdminUser.id,
+                            type: 'service',
+                            title: 'تم رفض الخدمة',
+                            message: `تم رفض خدمة "${service.service_type}" من قبل الإدارة.`,
+                            status: 'unread'
+                        });
+                    }
+                }
+
+                await loadPendingServices();
+                await loadAdminNotifications();
+                alert('تم رفض الخدمة');
+            } catch (error) {
+                console.error('Error rejecting service:', error);
+                alert('تعذر رفض الخدمة');
+            }
+        }
+    </script>
+</body>
+
+</html>

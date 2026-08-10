@@ -1,0 +1,590 @@
+<!--==========================================================*
+ * صفحة تفاصيل العرض (Offer Details Page)
+ * عرض تفاصيل العروض الخاصة وتمكين المستخدم من حجز العرض.
+ * تحتوي الصفحة على عرض بيانات الخصم، تاريخ العرض، الصورة،
+ * نموذج الحجز، وطرق الدفع.
+ * تعتمد على Supabase لجلب البيانات و JavaScript لإدارة التفاعل.
+ *==========================================================-->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <title>تفاصيل العرض - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <!-------------------------------------------------------------------------------------------->
+    <!--تنسيقات الصفحة-->
+    <style>
+        /* Offer details custom styles */
+        .offer-hero {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 2rem;
+            align-items: start;
+            padding: 6rem 2rem 3rem;
+        }
+        /*مسؤول عن عرض الصورة الرئيسية للعرض وتنسيق شكلها*/
+        .offer-gallery {
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            display:flex;
+            flex-direction:column;
+            gap:1rem;
+        }
+        /* تنسيق الصورة الرئيسية للعرض مع تأثير الحركة */
+        .offer-gallery .main-image {
+            width: 100%;
+            height: 460px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.5s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .offer-gallery .main-image:hover { transform: scale(1.02); }
+
+        /* معلومات العرض الأساسية
+       تحتوي على عنوان العرض، الخصم، التاريخ والوصف*/
+        .hero-info { background: white; border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-md); position: sticky; top: 100px; }
+        /* شارة حالة العرض مثل نشط أو منتهي */
+        .offer-badge { display:inline-block; padding:0.35rem 0.6rem; border-radius: 999px; background: #10b981; color:white; font-weight:700; margin-bottom:0.75rem; }
+        /* تنسيق عنوان العرض */
+        #offerTitle { font-size: 1.6rem; margin-bottom:0.5rem; font-weight:800; color:var(--text-primary); }
+        /* معلومات إضافية عن العرض مثل الخصم وتاريخ الانتهاء */
+        .offer-meta { color:var(--text-secondary); display:flex; gap:1rem; margin-bottom:0.75rem; font-weight:600; }
+        #offerShort { margin-bottom:1rem; color:var(--text-secondary); }
+
+        /* زر حجز العرض
+         يستخدم لفتح نافذة إدخال بيانات الحجز*/
+        #actionsRow .card-btn { background: var(--gradient-1); color: white; padding:0.8rem 1rem; border-radius: 12px; border:none; cursor:pointer; font-weight:700; box-shadow:var(--shadow-md); transition: transform 0.18s ease; }
+        #actionsRow .card-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+        /* تخطيط محتوى الصفحة يحتوي على أقسام تفاصيل العرض*/
+        .content-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; padding: 2rem; }
+        .main-content { max-width: 900px; }
+        .section-card { background: white; border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-md); }
+        .section-card h2 { color: var(--primary); margin-bottom: 1rem; font-size: 1.4rem; }
+        .section-card p { color: var(--text-secondary); line-height: 1.8; }
+        /* لوحة الدفع تعرض حقول الدفع حسب الطريقة المختارة*/
+        .payment-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        /* تنسيق حقول إدخال بيانات الدفع */
+        .payment-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .payment-field label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .payment-field input,
+        .payment-field select {
+            padding: 0.7rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .payment-field input:focus,
+        .payment-field select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
+            outline: none;
+        }
+        /* رسالة توضيحية خاصة بالدفع */
+        .payment-hint {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+        /* التصميم المتجاوب للشاشات الصغيرة*/
+        @media (max-width: 900px) {
+            .offer-hero { grid-template-columns: 1fr; padding: 4rem 1rem 2rem; }
+            .hero-info { position: static; }
+            .offer-gallery .main-image { height: 300px; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<!-------------------------------------------------------------------------------------------->
+<body>
+    <!--المحتوى الرئيسي للصفحة-->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo"><img src="Images/logo.png" alt="حجزي"></a>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+                <a id="authActionBtn" href="login.html" class="nav-btn nav-btn-primary auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+            </div>
+            <!-------------------------------------------------------------------------------------------->
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </nav>
+    <!-------------------------------------------------------------------------------------------->
+    <main class="page-container">
+        <section class="offer-hero">
+            <!-- صورة العرض الرئيسية -->
+            <div class="offer-gallery">
+                <img id="mainImage" class="main-image" src="" alt="صورة العرض الرئيسية">
+            </div>
+            <!-- معلومات العرض وزر الحجز -->
+            <div class="hero-info">
+                <div class="offer-badge" id="offerBadge"></div>
+                <h1 id="offerTitle"></h1>
+                <div class="offer-meta">
+                    <span><i class="fas fa-tags" aria-hidden="true" style="margin-left:8px;"></i> <span id="offerDiscount"></span></span>
+                    <span><i class="fas fa-calendar-alt" aria-hidden="true" style="margin-left:8px;"></i> <span id="offerEndDate"></span></span>
+                </div>
+                <p id="offerShort"></p>
+                <div id="actionsRow" style="margin-top:1rem; display:flex; gap:0.75rem;">
+                    <button id="bookBtn" class="card-btn" type="button">احجز الآن</button>
+                </div>
+            </div>
+        </section>
+        <!-------------------------------------------------------------------------------------------->
+        <div class="content-grid">
+            <div class="main-content">
+
+                <!-- قسم تفاصيل العرض والخصومات والتواريخ -->
+                <section class="card section-card" style="margin-top:2rem;">
+                    <h2>تفاصيل العرض</h2>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                        <div style="background:var(--bg-light); padding:1rem; border-radius:12px;">
+                            <i class="fas fa-tags" style=" font-size:1.5rem; margin-bottom:0.5rem;"></i>
+                            <div style="font-weight:700; color:var(--text-primary);">نسبة الخصم</div>
+                            <div id="detailDiscount" style="font-size:1.5rem;  ; font-weight:700;"></div>
+                        </div>
+                        <div style="background:var(--bg-light); padding:1rem; border-radius:12px;">
+                            <i class="fas fa-calendar-check" style="color:var(--primary); font-size:1.5rem; margin-bottom:0.5rem;"></i>
+                            <div style="font-weight:700; color:var(--text-primary);">تاريخ البدء</div>
+                            <div id="detailStartDate" style="font-size:1.1rem; color:var(--text-secondary);"></div>
+                        </div>
+                        <div style="background:var(--bg-light); padding:1rem; border-radius:12px;">
+                            <i class="fas fa-calendar-times" style=" font-size:1.5rem; margin-bottom:0.5rem;"></i>
+                            <div style="font-weight:700; color:var(--text-primary);">تاريخ الانتهاء</div>
+                            <div id="detailEndDate" style="font-size:1.1rem; color:var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <!-------------------------------------------------------------------------------------------->
+    <footer class="modern-footer">
+    </footer>
+    <!-------------------------------------------------------------------------------------------->
+    <!-- برمجة صفحة تفاصيل العرض
+    تشمل جلب بيانات العرض، إدارة تسجيل الدخول، وتنفيذ عمليات الحجز والدفع=-->
+    <script src="supabase-config.js"></script>
+    <script>
+      /*تحديث زر تسجيل الدخول يتحقق من حالة المستخدم ويعرض زر
+      تسجل الدخول او الخروج حسب الحالة*/
+        function updateAuthButton() {
+            const authBtn = document.getElementById('authActionBtn');
+            if (!authBtn) return;
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser && currentUser.id) {
+                authBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> تسجيل الخروج';
+                authBtn.setAttribute('href', '#');
+                authBtn.onclick = (event) => {
+                    event.preventDefault();
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'home.html';
+                };
+            } else {
+                authBtn.innerHTML = '<i class="fas fa-user-circle"></i> تسجيل الدخول';
+                authBtn.setAttribute('href', 'login.html');
+                authBtn.onclick = null;
+            }
+        }
+
+        ///////////////////////////////////////////
+        /* استخراج معرف العرض (ID) من رابط الصفحة */
+        function getQuery() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+       ///////////////////////////////////////////
+       /* تحديث النص داخل عنصر HTML باستخدام المعرف */
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+        ///////////////////////////////////////////
+        /* تحميل بيانات العرض 
+         يقوم بجلب بيانات العرض من قاعدة البيانات وعرضها داخل الصفحة.*/
+
+        async function loadOffer() {
+            const offerId = getQuery();
+            /* التحقق من وجود معرف العرض في الرابط */
+            if (!offerId) {
+                document.querySelector('.page-container').innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><h3>لم يتم تحديد العرض</h3><p>يرجى العودة واختيار عرض من القائمة.</p></div>';
+                return;
+            }
+
+            const mainContentEl = document.querySelector('.page-container');
+            try {
+                /* إنشاء اتصال مع قاعدة بيانات Supabase */
+                const supabase = getSupabase();
+                if (!supabase || typeof supabase.from !== 'function') {
+                    throw new Error('Supabase client is not available');
+                }
+
+                /* استرجاع بيانات العرض من جدول العروض */
+                const { data: offer, error } = await supabase
+                    .from('offers')
+                    .select('*')
+                    .eq('id', offerId)
+                    .single();
+
+                if (error) throw error;
+                if (!offer) {
+                    mainContentEl.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><h3>العرض غير موجود</h3><p>لم يتم العثور على العرض المطلوب.</p></div>';
+                    return;
+                }
+
+                // Populate offer details 
+                /* عرض بيانات العرض داخل عناصر الصفحة */
+                setText('offerTitle', offer.title || 'عرض خاص');
+                setText('offerShort', offer.description || 'احصل على أفضل الخصومات الآن!');
+                setText('offerDescription', offer.description || 'لا يوجد وصف متاح لهذا العرض.');
+                setText('offerDiscount', `خصم ${offer.discount_percentage || 0}%`);
+                setText('offerEndDate', `صالح حتى: ${new Date(offer.end_date).toLocaleDateString('ar-SA')}`);
+                setText('detailDiscount', `${offer.discount_percentage || 0}%`);
+                setText('detailStartDate', new Date(offer.start_date).toLocaleDateString('ar-SA'));
+                setText('detailEndDate', new Date(offer.end_date).toLocaleDateString('ar-SA'));
+
+                /* تحديد حالة العرض وتغيير لون الشارة */
+                const badge = document.getElementById('offerBadge');
+                if (badge) {
+                    if (offer.status === 'active') {
+                        badge.textContent = 'نشط';
+                        badge.style.background = '#10b981';
+                    } else if (offer.status === 'expired') {
+                        badge.textContent = 'منتهي';
+                        badge.style.background = '#ef4444';
+                    } else if (offer.status === 'pending') {
+                        badge.textContent = 'قيد المراجعة';
+                        badge.style.background = '#f59e0b';
+                    } else {
+                        badge.textContent = offer.status || 'عرض';
+                    }
+                }
+
+                /* عرض الصورة الرئيسية للعرض */
+                const mainImage = document.getElementById('mainImage');
+                if (mainImage) {
+                    if (offer.image_url) {
+                        mainImage.src = offer.image_url;
+                    } else {
+                        mainImage.src = 'Images/logo.svg';
+                    }
+                }
+
+                window.currentOffer = offer;
+                const bookBtn = document.getElementById('bookBtn');
+                if (bookBtn) {
+                    /* ربط زر الحجز بفتح نافذة الحجز */
+                    bookBtn.onclick = () => openOfferBookingModal(offer);
+                }
+
+            } catch (err) {
+                console.error('Failed to load offer:', err);
+                if (mainContentEl) {
+                    mainContentEl.innerHTML = '<div class="modern-card" style="text-align:center;"><h3>تعذر تحميل تفاصيل العرض</h3><p>حاول لاحقًا.</p></div>';
+                }
+            }
+        }
+        /* تشغيل الوظائف الأساسية بعد تحميل الصفحة */
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthButton();
+            loadOffer();
+        });
+    </script>
+    <!----------------------------------------------------------->
+    <!-- نافذة حجز العرض
+      تعرض نموذج إدخال بيانات الحجز واختيار طريقة الدفع.-->
+
+    <div id="bookingModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; z-index:1200;">
+        <div class="modal-card" style="background:#fff; padding:1.25rem; border-radius:12px; width:420px; max-width:92%; box-shadow:var(--shadow-lg);">
+            <h3 style="margin-top:0;">تأكيد حجز العرض</h3>
+            <p id="modalOfferTitle" style="margin:0 0 0.5rem 0; color:var(--text-secondary);"></p>
+            <form id="bookingForm" style="display:flex; flex-direction:column; gap:0.6rem;">
+                <input id="b_name" name="name" placeholder="الاسم" required style="padding:0.6rem; border-radius:8px; border:1px solid #e5e7eb;">
+                <input id="b_email" name="email" type="email" placeholder="البريد الإلكتروني" required style="padding:0.6rem; border-radius:8px; border:1px solid #e5e7eb;">
+                <input id="b_phone" name="phone" placeholder="رقم الهاتف" required style="padding:0.6rem; border-radius:8px; border:1px solid #e5e7eb;">
+                <label style="font-weight:700;">تاريخ الحجز</label>
+                <input id="b_date" name="date" type="date" required style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                <label style="font-weight:700;">الوقت</label>
+                <input id="b_time" name="time" type="time" required style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                <label style="font-weight:700;">طريقة الدفع</label>
+                <select id="b_payment" required style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <option value="paypal">PayPal</option>
+                    <option value="visa">Visa Card</option>
+                </select>
+                <div id="paypalFields" class="payment-panel" style="display:none;">
+                    <div class="payment-field">
+                        <label for="paypal_email">البريد الإلكتروني لحساب PayPal</label>
+                        <input id="paypal_email" name="paypal_email" type="email" placeholder="you@example.com">
+                    </div>
+                    <div class="payment-field">
+                        <label for="paypal_password">كلمة المرور أو الرمز السري</label>
+                        <input id="paypal_password" name="paypal_password" type="password" placeholder="أدخل كلمة المرور">
+                    </div>
+                </div>
+                <div id="visaFields" class="payment-panel" style="display:none;">
+                    <div class="payment-field">
+                        <label for="card_name">اسم حامل البطاقة</label>
+                        <input id="card_name" name="card_name" placeholder="الاسم كما يظهر على البطاقة">
+                    </div>
+                    <div class="payment-field">
+                        <label for="card_number">رقم البطاقة</label>
+                        <input id="card_number" name="card_number" placeholder="1234 5678 9012 3456" inputmode="numeric">
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <div class="payment-field" style="flex:1;">
+                            <label for="card_expiry">تاريخ الانتهاء</label>
+                            <input id="card_expiry" name="card_expiry" placeholder="MM/YY">
+                        </div>
+                        <div class="payment-field" style="width:110px;">
+                            <label for="card_cvv">CVV</label>
+                            <input id="card_cvv" name="card_cvv" placeholder="123" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="payment-hint">سيتم حفظ بيانات البطاقة محليًا فقط لهذا النموذج ولا يتم إرسالها إلى خادم مباشر.</div>
+                </div>
+                <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.5rem;">
+                    <button type="button" id="cancelBookingBtn" class="action-btn">إلغاء</button>
+                    <button type="submit" id="confirmBookingBtn" class="card-btn">حجز</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!----------------------------------------------------------->
+    <script>
+        //فتح نافذة الحجز تجهيز بيانات المستخدم واظهار نموذج الحجز
+
+        async function openOfferBookingModal(offer) {
+            const modal = document.getElementById('bookingModal');
+            if (!modal) return;
+
+            const titleEl = document.getElementById('modalOfferTitle');
+            if (titleEl) titleEl.textContent = offer?.title || 'عرض خاص';
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser) {
+                alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
+                window.location.href = 'home.html';
+                return;
+            }
+
+            /* تعبئة بيانات المستخدم تلقائياً */
+            document.getElementById('b_name').value = currentUser.full_name || currentUser.name || '';
+            document.getElementById('b_email').value = currentUser.email || '';
+            document.getElementById('b_phone').value = currentUser.phone || currentUser.mobile || '';
+
+            const payment = document.getElementById('b_payment');
+            const paypalFields = document.getElementById('paypalFields');
+            const visaFields = document.getElementById('visaFields');
+
+            /* إظهار حقول الدفع حسب الطريقة المختارة */
+            function togglePaymentFields() {
+                const method = payment.value;
+                paypalFields.style.display = method === 'paypal' ? 'flex' : 'none';
+                visaFields.style.display = method === 'visa' ? 'flex' : 'none';
+
+                if (method !== 'paypal') {
+                    document.getElementById('paypal_email').value = '';
+                    document.getElementById('paypal_password').value = '';
+                }
+                if (method !== 'visa') {
+                    document.getElementById('card_name').value = '';
+                    document.getElementById('card_number').value = '';
+                    document.getElementById('card_expiry').value = '';
+                    document.getElementById('card_cvv').value = '';
+                }
+            }
+
+            payment.addEventListener('change', togglePaymentFields);
+            togglePaymentFields();
+
+            /* إغلاق نافذة الحجز */
+            document.getElementById('cancelBookingBtn').onclick = () => { modal.style.display = 'none'; };
+
+            const form = document.getElementById('bookingForm');
+            /* التحقق من صحة بيانات الحجز ثم إرسال الطلب إلى قاعدة البيانات.*/
+            
+            const submitHandler = async (e) => {
+                e.preventDefault();
+
+                /* التحقق من الحقول الإلزامية */
+                const requiredFields = [
+                    ['b_name', 'الاسم'],
+                    ['b_email', 'البريد الإلكتروني'],
+                    ['b_phone', 'رقم الهاتف'],
+                    ['b_date', 'تاريخ الحجز'],
+                    ['b_time', 'الوقت']
+                ];
+
+                for (const [fieldId, label] of requiredFields) {
+                    const field = document.getElementById(fieldId);
+                    if (!field || !field.value || field.value.trim() === '') {
+                        alert(`يرجى تعبئة ${label}`);
+                        return;
+                    }
+                }
+
+                /* التحقق من بيانات الدفع عبر PayPal */
+                if (payment.value === 'paypal') {
+                    const paypalEmail = document.getElementById('paypal_email').value.trim();
+                    const paypalPassword = document.getElementById('paypal_password').value.trim();
+                    if (!paypalEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)) {
+                        alert('يرجى إدخال بريد PayPal صالح');
+                        return;
+                    }
+                    if (!paypalPassword) {
+                        alert('يرجى إدخال كلمة المرور أو الرمز السري');
+                        return;
+                    }
+                }
+                /* التحقق من بيانات بطاقة Visa */
+                if (payment.value === 'visa') {
+                    const cardName = document.getElementById('card_name').value.trim();
+                    const cn = document.getElementById('card_number').value.replace(/\s+/g, '');
+                    const exp = document.getElementById('card_expiry').value.trim();
+                    const cvv = document.getElementById('card_cvv').value.trim();
+
+                    if (!cardName) {
+                        alert('يرجى إدخال اسم حامل البطاقة');
+                        return;
+                    }
+                    if (!/^\d{16}$/.test(cn)) {
+                        alert('رقم البطاقة يجب أن يكون 16 رقمًا');
+                        return;
+                    }
+                    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) {
+                        alert('تاريخ الانتهاء يجب أن يكون بصيغة MM/YY');
+                        return;
+                    }
+                    const [month, year] = exp.split('/').map(part => parseInt(part, 10));
+                    const currentYear = new Date().getFullYear() % 100;
+                    const currentMonth = new Date().getMonth() + 1;
+                    if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
+                        alert('تاريخ البطاقة منتهي أو غير صالح');
+                        return;
+                    }
+                    if (!/^\d{3,4}$/.test(cvv)) {
+                        alert('CVV يجب أن يكون 3 أو 4 أرقام');
+                        return;
+                    }
+                }
+
+                if (!currentUser || !currentUser.id) {
+                    alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
+                    window.location.href = 'home.html';
+                    return;
+                }
+
+                const bookingTime = document.getElementById('b_time').value.trim();
+                const paymentMethod = document.getElementById('b_payment').value;
+                const paymentMeta = paymentMethod === 'visa'
+                    ? {
+                        method: 'visa',
+                        card_holder: document.getElementById('card_name').value.trim(),
+                        masked_card: (document.getElementById('card_number').value || '').replace(/\s+/g, '').slice(-4)
+                    }
+                    : {
+                        method: 'paypal',
+                        paypal_email: document.getElementById('paypal_email').value.trim(),
+                        paypal_password: document.getElementById('paypal_password').value.trim()
+                    };
+
+                    /* إنشاء بيانات الحجز قبل حفظها */
+                const payload = {
+                    service_id: null,
+                    customer_id: currentUser.id,
+                    booking_name: document.getElementById('b_name').value.trim(),
+                    booking_date: document.getElementById('b_date').value,
+                    details: JSON.stringify({
+                        time: bookingTime,
+                        payment_method: paymentMethod,
+                        payment_meta: paymentMeta,
+                        offer_id: offer?.id || null,
+                        offer_title: offer?.title || ''
+                    }),
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                };
+                try {
+                    const supabase = getSupabase();
+                    /* حفظ بيانات الحجز في قاعدة البيانات */
+                    const { data: inserted, error } = await supabase.from('bookings').insert([payload]).select().single();
+                    if (error) throw error;
+
+                    try {
+                        if (offer?.provider_id) {
+                            /* إرسال إشعار إلى مقدم الخدمة */
+                            await NotificationsDB.add({
+                                user_id: offer.provider_id,
+                                type: 'booking',
+                                title: 'طلب حجز جديد',
+                                message: `${payload.booking_name} يريد حجز العرض ${offer.title || 'عرض خاص'} بتاريخ ${payload.booking_date}${bookingTime ? ' الساعة ' + bookingTime : ''}`,
+                                status: 'unread'
+                            });
+                        }
+                    } catch (nerr) { console.warn('Failed to create provider notification', nerr); }
+
+                    // create admin notification
+                    try {
+                        /* إرسال إشعار إلى مدير النظام */
+                        const { data: adminUser } = await supabase.from('users').select('id').eq('role', 'admin').limit(1).single();
+                        if (adminUser) {
+                            await NotificationsDB.add({
+                                user_id: adminUser.id,
+                                type: 'booking',
+                                title: 'حجز جديد على المنصة',
+                                message: `حجز جديد: ${payload.booking_name} حجز العرض ${offer.title || 'عرض خاص'} بتاريخ ${payload.booking_date}${bookingTime ? ' الساعة ' + bookingTime : ''}`,
+                                status: 'unread'
+                            });
+                        }
+                    } catch (nerr) { console.warn('Failed to create admin notification', nerr); }
+
+                    /* إغلاق النافذة بعد نجاح الحجز */
+                    modal.style.display = 'none';
+                    alert('تم إرسال طلب الحجز، بانتظار قبول مقدم الخدمة');
+                } catch (err) {
+                    console.error('Offer booking failed', err);
+                    alert('تعذر إرسال طلب الحجز، حاول لاحقًا');
+                }
+            };
+            form.removeEventListener('submit', submitHandler);
+            form.addEventListener('submit', submitHandler);
+            modal.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <title>تفاصيل الخدمة - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <style>
+        /* Service details custom styles */
+        .service-hero {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 2rem;
+            align-items: start;
+            padding: 6rem 2rem 3rem;
+        }
+
+        .service-gallery {
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            display:flex;
+            flex-direction:column;
+            gap:1rem;
+        }
+
+        .service-gallery .main-image {
+            width: 100%;
+            height: 460px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.5s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .service-gallery .main-image:hover { transform: scale(1.02); }
+
+        .thumbnail-list { display:flex; gap:0.5rem; overflow:auto; padding-bottom: 0.5rem; }
+        .thumbnail-list .thumbnail { width:80px; height:60px; object-fit:cover; border-radius:8px; cursor:pointer; opacity:0.85; transition: all 0.2s ease; border:2px solid transparent; }
+        .thumbnail-list .thumbnail:hover { transform: translateY(-6px); opacity:1; border-color: rgba(99,102,241,0.15); }
+
+        .hero-info { background: white; border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-md); position: sticky; top: 100px; }
+        .service-badge { display:inline-block; padding:0.35rem 0.6rem; border-radius: 999px; background: var(--primary-light); color:white; font-weight:700; margin-bottom:0.75rem; }
+        #serviceTitle { font-size: 1.6rem; margin-bottom:0.5rem; font-weight:800; color:var(--text-primary); }
+        .service-meta { color:var(--text-secondary); display:flex; gap:1rem; margin-bottom:0.75rem; font-weight:600; }
+        #serviceShort { margin-bottom:1rem; color:var(--text-secondary); }
+
+        #actionsRow .card-btn { background: var(--gradient-1); color: white; padding:0.8rem 1rem; border-radius: 12px; border:none; cursor:pointer; font-weight:700; box-shadow:var(--shadow-md); transition: transform 0.18s ease; }
+        #actionsRow .card-btn:hover { transform: translateY(-3px); }
+        .action-btn { padding:0.6rem 0.9rem; border-radius:12px; background:transparent; border:2px solid #e5e7eb; text-decoration:none; color:var(--text-primary); display:inline-flex; align-items:center; gap:8px; }
+
+        .main-content { max-width: 1100px; margin: 1.5rem auto; padding: 0 2rem 3rem; }
+        .facilities-grid { display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem; }
+        .facility-item { background: #fff; padding:0.6rem 0.9rem; border-radius: 10px; box-shadow: var(--shadow-sm); color:var(--text-primary); font-weight:600; }
+
+        /* subtle entrance animation */
+        .service-hero, .main-content { animation: appearUp 0.6s ease both; }
+        @keyframes appearUp { from { transform: translateY(12px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .service-hero { grid-template-columns: 1fr; padding-top:5.5rem; }
+            .service-gallery .main-image { height: 320px; }
+            .hero-info { position: static; }
+        }
+
+        @media (max-width: 480px) {
+            .service-gallery .main-image { height: 220px; }
+            .thumbnail-list .thumbnail { width:66px; height:48px; }
+            #serviceTitle { font-size:1.25rem; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-state.js"></script>
+</head>
+<body>
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo"><img src="Images/logo.png" alt="حجزي"></a>
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+            </div>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </nav>
+
+    <main class="page-container">
+        <section class="service-hero">
+            <div class="service-gallery">
+                <img id="mainImage" class="main-image" src="" alt="صورة الخدمة الرئيسية">
+                <div id="thumbnails" class="thumbnail-list"></div>
+            </div>
+            <div class="hero-info">
+                <h1 id="serviceTitle"></h1>
+                <div class="service-meta">
+                    <span><i class="fas fa-map-marker-alt" aria-hidden="true" style="margin-left:8px;"></i> <span id="serviceLocation"></span></span>
+                    <span><i class="fas fa-money-bill-wave" aria-hidden="true" style="margin-left:8px;"></i> <span id="servicePrice"></span></span>
+                </div>
+                <p id="serviceShort"></p>
+                <div id="actionsRow" style="margin-top:1rem; display:flex; gap:0.75rem;">
+                    <button id="bookBtn" class="card-btn">احجز الآن</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="content-grid">
+            <div class="main-content">
+                <section class="card section-card">
+                    <h2>الوصف الكامل</h2>
+                    <p id="serviceDescription"></p>
+                </section>
+                <!-- <section class="card section-card">
+                    <h2>المرافق والخدمات</h2>
+                    <div id="serviceFacilities" class="facilities-grid"></div>
+                </section> -->
+
+                <!-- Related Services Section -->
+                <section class="card section-card" id="relatedServicesSection" style="display:none; margin-top:2rem;">
+                    <h2>خدمات مشابهة</h2>
+                    <div id="relatedServicesGrid" class="cards-grid" style="margin-top:1rem;"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="modern-footer">
+        <div class="footer-bottom">© 2026 جميع الحقوق محفوظة لمنصة حجزي</div>
+    </footer>
+
+    <script>
+        function normalizeServiceId(rawValue) {
+            if (rawValue === null || rawValue === undefined) return '';
+            const text = String(rawValue).trim();
+            if (!text) return '';
+            const cleaned = text
+                .replace(/^[^A-Za-z0-9._-]+/, '')
+                .replace(/[^A-Za-z0-9._-]+/g, '');
+            return cleaned;
+        }
+
+        function getQuery() {
+            const params = new URLSearchParams(window.location.search);
+            const directId = normalizeServiceId(params.get('id'));
+            const fallbackId = normalizeServiceId(params.get('service_id') || params.get('serviceId') || params.get('service'));
+            return { id: directId || fallbackId, type: params.get('type') };
+        }
+
+        async function loadService() {
+            const mainContentEl = document.querySelector('.main-content') || document.querySelector('main') || document.body;
+            const q = getQuery();
+            const id = q.id;
+            
+            console.log('Loading service with ID:', id);
+            
+            if (!id) {
+                console.error('Empty or missing service ID');
+                if (mainContentEl) {
+                    mainContentEl.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><h3>تعذر العثور على الخدمة</h3><p>لم يتم تحديد معرّف الخدمة أو أن الرابط غير مكتمل.</p><a href="home.html" class="card-btn" style="display:inline-block; margin-top:1rem;">العودة للرئيسية</a></div>';
+                } else {
+                    console.error('main content element not found to show missing id message');
+                }
+                return;
+            }
+            try {
+                const supabase = getSupabase();
+                const { data, error } = await supabase.from('services').select('*').eq('id', id).single();
+                if (error) throw error;
+                const svc = data;
+                
+                console.log('Service loaded:', svc);
+
+                const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+                setText('serviceTitle', svc.title || svc.service_type || 'تفاصيل الخدمة');
+                setText('serviceLocation', svc.location || '');
+                setText('servicePrice', (svc.price || '') + ' ر.س');
+                setText('serviceShort', svc.short_description || svc.description || '');
+                setText('serviceDescription', svc.description || '');
+
+                const mainImage = document.getElementById('mainImage');
+                if (mainImage) {
+                    if (svc.images && Array.isArray(svc.images) && svc.images.length>0) {
+                        mainImage.src = svc.images[0];
+                        const thumbs = document.getElementById('thumbnails');
+                        if (thumbs) {
+                            thumbs.innerHTML = '';
+                            svc.images.forEach(src => {
+                                const img = document.createElement('img');
+                                img.src = src;
+                                img.className = 'thumbnail';
+                                img.addEventListener('click', () => mainImage.src = src);
+                                thumbs.appendChild(img);
+                            });
+                        }
+                    } else if (svc.image_url) {
+                        mainImage.src = svc.image_url;
+                    } else if (svc.image) {
+                        mainImage.src = svc.image;
+                    } else {
+                        mainImage.src = 'Images/logo.svg';
+                    }
+                }
+
+                const facilitiesEl = document.getElementById('serviceFacilities');
+                if (facilitiesEl) {
+                    facilitiesEl.innerHTML = '';
+                    if (svc.facilities && Array.isArray(svc.facilities)) {
+                        svc.facilities.forEach(f => {
+                            const d = document.createElement('div');
+                            d.className = 'facility-item';
+                            d.textContent = f;
+                            facilitiesEl.appendChild(d);
+                        });
+                    }
+                }
+
+                // expose current service for modal usage
+                window.currentService = svc;
+
+                const bookBtn = document.getElementById('bookBtn');
+                if (bookBtn) {
+                    bookBtn.addEventListener('click', async () => {
+                        // Always open the booking modal. If user is logged-in it will be prefilled,
+                        // otherwise guest info can be entered and a booking will be created with customer_id = null.
+                        await openBookingModal(svc);
+                    });
+                }
+
+                // Load related services
+                await loadRelatedServices(svc);
+
+            } catch (err) {
+                console.error('Failed to load service:', err);
+                if (mainContentEl) {
+                    mainContentEl.innerHTML = '<div class="modern-card" style="text-align:center;"><h3>تعذر تحميل تفاصيل الخدمة</h3><p>حاول لاحقًا.</p></div>';
+                }
+            }
+        }
+
+        async function loadRelatedServices(currentService) {
+            try {
+                const supabase = getSupabase();
+                const serviceType = currentService.service_type;
+                
+                if (!serviceType) {
+                    return; // No service type, can't find related services
+                }
+
+                // Fetch services of the same type, excluding the current service
+                const { data: relatedServices, error } = await supabase
+                    .from('services')
+                    .select('*')
+                    .eq('service_type', serviceType)
+                    .neq('id', currentService.id)
+                    .eq('status', 'approved')
+                    .limit(3);
+
+                if (error) throw error;
+
+                // Only show the section if we have related services
+                if (relatedServices && relatedServices.length > 0) {
+                    const relatedSection = document.getElementById('relatedServicesSection');
+                    const relatedGrid = document.getElementById('relatedServicesGrid');
+                    
+                    if (relatedSection && relatedGrid) {
+                        relatedSection.style.display = 'block';
+                        relatedGrid.innerHTML = relatedServices.map(service => `
+                            <article class="modern-card hover-lift" style="display:flex; flex-direction:column; gap:0.5rem; overflow:hidden;">
+                                ${service.image_url ? `<img src="${service.image_url}" alt="${service.title || service.service_type || 'خدمة'}" style="width:100%;height:180px;object-fit:cover;border-radius:12px;">` : '<img src="Images/logo.svg" alt="'+(service.title || service.service_type || 'خدمة')+'" style="width:100%;height:180px;object-fit:cover;border-radius:12px;">'}
+                                
+                                <div style="padding: 0.5rem 0;">
+                                    <a href="service-details.html?id=${encodeURIComponent(service.id)}" class="card-btn" style="display:block; text-align:center; background:var(--gradient-1); color:white; padding:0.6rem 0.8rem; border-radius:12px; text-decoration:none; font-weight:700; transition:transform 0.2s ease; font-size:0.9rem;">
+                                        <i class="fas fa-eye"></i> عرض
+                                    </a>
+                                </div>
+
+                                <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.5rem 0;">
+                                    <span class="status-badge status-confirmed" style="font-size:0.8rem;">${getServiceTypeLabel(service.service_type)}</span>
+                                    <div style="background: linear-gradient(135deg, var(--accent-color), #ff8d4d); color:white; padding:0.3rem 0.6rem; border-radius:999px; font-weight:700; font-size:0.85rem;">
+                                        ${service.price || 0} ر.س
+                                    </div>
+                                </div>
+                            </article>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load related services:', error);
+                // Don't show error to user, just don't display related services
+            }
+        }
+
+        function getServiceTypeLabel(type) {
+            const labels = {
+                'hotel': 'فندق',
+                'gym': 'نادي',
+                'salon': 'صالون',
+                'restaurant': 'مطعم'
+            };
+            return labels[type] || type || 'خدمة';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadService);
+    </script>
+
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; z-index:1200;">
+            <div class="modal-card" style="background:#fff; padding:1.25rem; border-radius:12px; width:420px; max-width:92%; box-shadow:var(--shadow-lg);">
+                <h3 style="margin-top:0;">تأكيد الحجز</h3>
+                <p id="modalServiceTitle" style="margin:0 0 0.5rem 0; color:var(--text-secondary);"></p>
+                <form id="bookingForm" style="display:flex; flex-direction:column; gap:0.6rem;">
+                    <input id="b_name" name="name" placeholder="الاسم" required style="padding:0.6rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <input id="b_email" name="email" type="email" placeholder="البريد الإلكتروني" required style="padding:0.6rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <input id="b_phone" name="phone" placeholder="رقم الهاتف" required style="padding:0.6rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <label style="font-weight:700;">تاريخ الحجز</label>
+                    <input id="b_date" name="date" type="date" required style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <label style="font-weight:700;">الوقت</label>
+                    <input id="b_time" name="time" type="time" required style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <label style="font-weight:700;">طريقة الدفع</label>
+                    <select id="b_payment" required style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                        <option value="paypal">PayPal</option>
+                        <option value="card">بطاقة فيزا</option>
+                    </select>
+                    <div id="cardFields" style="display:none; gap:0.5rem;">
+                        <input id="card_number" name="card_number" placeholder="رقم البطاقة" inputmode="numeric" style="padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;">
+                        <div style="display:flex; gap:0.5rem;"><input id="card_expiry" name="card_expiry" placeholder="MM/YY" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;"><input id="card_cvv" name="card_cvv" placeholder="CVV" inputmode="numeric" style="width:110px; padding:0.5rem; border-radius:8px; border:1px solid #e5e7eb;"></div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.5rem;">
+                        <button type="button" id="cancelBookingBtn" class="action-btn">إلغاء</button>
+                        <button type="submit" id="confirmBookingBtn" class="card-btn">حجز</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // Booking modal logic
+            async function openBookingModal(svc) {
+                const modal = document.getElementById('bookingModal');
+                if (!modal) return;
+                // prefill service title
+                const titleEl = document.getElementById('modalServiceTitle');
+                if (titleEl) titleEl.textContent = svc.title || svc.service_type || '';
+
+                // require authenticated user before showing the booking modal
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!currentUser) {
+                    alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
+                    window.location.href = 'home.html';
+                    return;
+                }
+
+                document.getElementById('b_name').value = currentUser.full_name || currentUser.name || '';
+                document.getElementById('b_email').value = currentUser.email || '';
+                document.getElementById('b_phone').value = currentUser.phone || currentUser.mobile || '';
+
+                // payment selector
+                const payment = document.getElementById('b_payment');
+                const cardFields = document.getElementById('cardFields');
+                payment.addEventListener('change', () => {
+                    if (payment.value === 'card') cardFields.style.display = 'flex'; else cardFields.style.display = 'none';
+                });
+
+                // cancel
+                document.getElementById('cancelBookingBtn').onclick = () => { modal.style.display = 'none'; };
+
+                // submit handler
+                const form = document.getElementById('bookingForm');
+                const submitHandler = async (e) => {
+                    e.preventDefault();
+                    // client-side validation: all fields required
+                    const requiredIds = ['b_name','b_date','b_time','b_payment'];
+                    for (const id of requiredIds) {
+                        const el = document.getElementById(id);
+                        if (!el || !el.value || el.value.trim() === '') { alert('يرجى تعبئة جميع الحقول المطلوبة'); return; }
+                    }
+                    if (payment.value === 'card') {
+                        const cn = document.getElementById('card_number').value || '';
+                        const exp = document.getElementById('card_expiry').value || '';
+                        const cvv = document.getElementById('card_cvv').value || '';
+                        if (!cn.trim() || !exp.trim() || !cvv.trim()) { alert('يرجى تعبئة بيانات البطاقة'); return; }
+                        // basic card validation (length)
+                        if (cn.replace(/\s+/g,'').length < 12) { alert('رقم البطاقة غير صالح'); return; }
+                    }
+
+                    // ensure user is logged-in because DB requires customer_id NOT NULL
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                    if (!currentUser || !currentUser.id) {
+                        alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
+                        window.location.href = 'home.html';
+                        return;
+                    }
+
+                    const bookingTime = document.getElementById('b_time').value.trim();
+                    const paymentMethod = document.getElementById('b_payment').value;
+                    const paymentMeta = paymentMethod === 'card'
+                        ? { masked_card: (document.getElementById('card_number').value || '').slice(-4) }
+                        : { method: 'paypal' };
+
+                    const bookingDetails = {
+                        time: bookingTime,
+                        payment_method: paymentMethod,
+                        payment_meta: paymentMeta
+                    };
+
+                    // prepare booking payload matching current DB schema
+                    const payload = {
+                        service_id: svc.id,
+                        customer_id: currentUser.id,
+                        booking_name: document.getElementById('b_name').value.trim(),
+                        booking_date: document.getElementById('b_date').value,
+                        details: JSON.stringify(bookingDetails),
+                        status: 'pending',
+                        created_at: new Date().toISOString()
+                    };
+
+                    try {
+                        const supabase = getSupabase();
+                        const { data: inserted, error } = await supabase.from('bookings').insert([payload]).select().single();
+                        if (error) throw error;
+
+                        // create provider notification
+                        try {
+                            if (svc.provider_id) {
+                                await NotificationsDB.add({
+                                    user_id: svc.provider_id,
+                                    type: 'booking',
+                                    title: 'طلب حجز جديد',
+                                    message: `${payload.booking_name} يريد حجز ${svc.title || svc.service_type || ''} بتاريخ ${payload.booking_date}${bookingTime ? ' الساعة ' + bookingTime : ''}`,
+                                    status: 'unread'
+                                });
+                            }
+                        } catch (nerr) { console.warn('Failed to create provider notification', nerr); }
+
+                        // create admin notification
+                        try {
+                            const { data: adminUser } = await supabase.from('users').select('id').eq('role', 'admin').limit(1).single();
+                            if (adminUser) {
+                                await NotificationsDB.add({
+                                    user_id: adminUser.id,
+                                    type: 'booking',
+                                    title: 'حجز جديد على المنصة',
+                                    message: `حجز جديد: ${payload.booking_name} حجز ${svc.title || svc.service_type || ''} بتاريخ ${payload.booking_date}${bookingTime ? ' الساعة ' + bookingTime : ''}`,
+                                    status: 'unread'
+                                });
+                            }
+                        } catch (nerr) { console.warn('Failed to create admin notification', nerr); }
+
+                        modal.style.display = 'none';
+                        alert('تم إرسال طلب الحجز، بانتظار قبول مقدم الخدمة');
+
+                    } catch (err) {
+                        console.error('Booking failed', err);
+                        alert('تعذر إرسال طلب الحجز، حاول لاحقًا');
+                    }
+                };
+
+                form.removeEventListener('submit', submitHandler);
+                form.addEventListener('submit', submitHandler);
+
+                modal.style.display = 'flex';
+            }
+        </script>
+</body>
+</html>

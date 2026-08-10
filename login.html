@@ -1,0 +1,198 @@
+<!--=========================================
+    منصة حجوزاتي - صفحة تسجيل الدخول وإنشاء الحساب
+    تم تصميم الصفحة لدعم المستخدمين ومقدمي الخدمات
+=========================================-->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+
+<head>
+  <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+  <meta name="description" content="منصة حجوزاتي لإدارة الحجوزات الإلكترونية بسهولة وأمان">
+  <meta name="منصة حجوزات خدمية" content="جاهز لادارة حجوزاتك ">
+  <title>تسجيل الدخول</title>
+  <link rel="stylesheet" href="login.css"><!-- استدعاء ملف التصميم الرئيسي -->
+  <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+  <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+</head>
+<!------------------------------------------------------------------------------>
+  <!-- الحاوية الرئيسية -->
+<body>
+  <div class="container">
+    <!--نموذج تسجيل الدخول-->
+    <div class="form-box login">
+      <form id="loginForm">
+        <h1>تسجيـــل الدخــول</h1>
+        <div class="input-box">
+          <input type="email" id="loginEmail" placeholder="ادخل الايميل" required>
+          <i class="bi bi-envelope"></i>
+        </div>
+        <div class="input-box">
+          <input type="password" id="loginPassword" placeholder="كلمة المرور" required>
+          <i class="bi bi-lock"></i>
+        </div>
+        <div>
+          <button type="submit" class="btn"> دخـــول</button>
+        </div>
+      </form>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <!--نموذج انشاء الحساب-->
+    <div class="form-box register">
+      <form id="registerForm">
+        <h1>انشـــاء حســاب</h1>
+        <div class="input-box">
+          <input type="text" id="registerName" placeholder="ادخل الاسم" required>
+          <i class="bi bi-person"></i>
+        </div>
+
+        <div class="input-box">
+          <input type="email" id="registerEmail" placeholder="ادخل الايميل" required>
+          <i class="bi bi-envelope"></i>
+        </div>
+
+        <div class="input-box phone-input-group">
+           <!-- رمز الدولة -->
+          <select class="country-code-select" id="countryCode" required>
+            <option value="">رمز الدولة</option>
+            <optgroup label="الدول العربية">
+              <option value="+966">+966 السعودية</option>
+              <option value="+971">+971 الإمارات</option>
+              <option value="+965">+965 الكويت</option>
+              <option value="+974">+974 قطر</option>
+              <option value="+973">+973 البحرين</option>
+              <option value="+968">+968 سلطنة عمان</option>
+              <option value="+20">+20 مصر</option>
+              <option value="+962">+962 الأردن</option>
+              <option value="+961">+961 لبنان</option>
+              <option value="+970">+970 فلسطين</option>
+              <option value="+963">+968 سوريا</option>
+              <option value="+964">+964 العراق</option>
+              <option value="+967">+967 اليمن</option>
+              <option value="+213">+213 الجزائر</option>
+              <option value="+216">+216 تونس</option>
+              <option value="+212">+212 المغرب</option>
+              <option value="+218">+218 ليبيا</option>
+              <option value="+249">+249 السودان</option>
+              <option value="+253">+253 جيبوتي</option>
+              <option value="+252">+252 الصومال</option>
+              <option value="+269">+269 جزر القمر</option>
+              <option value="+222">+222 موريتانيا</option>
+            </optgroup>
+            <optgroup label="الدول الأجنبية">
+              <option value="+1">+1 أمريكا/كندا</option>
+              <option value="+44">+44 بريطانيا</option>
+              <option value="+33">+33 فرنسا</option>
+              <option value="+49">+49 ألمانيا</option>
+              <option value="+39">+39 إيطاليا</option>
+              <option value="+34">+34 إسبانيا</option>
+              <option value="+31">+31 هولندا</option>
+              <option value="+41">+41 سويسرا</option>
+              <option value="+46">+46 السويد</option>
+              <option value="+47">+47 النرويج</option>
+              <option value="+45">+45 الدنمارك</option>
+              <option value="+358">+358 فنلندا</option>
+              <option value="+43">+43 النمسا</option>
+              <option value="+32">+32 بلجيكا</option>
+              <option value="+351">+351 البرتغال</option>
+              <option value="+30">+30 اليونان</option>
+              <option value="+90">+90 تركيا</option>
+              <option value="+7">+7 روسيا</option>
+              <option value="+81">+81 اليابان</option>
+              <option value="+82">+82 كوريا الجنوبية</option>
+              <option value="+86">+86 الصين</option>
+              <option value="+91">+91 الهند</option>
+              <option value="+61">+61 أستراليا"></option>
+              <option value="+55">+55 البرازيل</option>
+              <option value="+52">+52 المكسيك</option>
+              <option value="+54">+54 الأرجنتين</option>
+              <option value="+27">+27 جنوب أفريقيا</option>
+              <option value="+234">+234 نيجيريا</option>
+              <option value="+62">+62 إندونيسيا</option>
+              <option value="+63">+63 الفلبين</option>
+              <option value="+66">+66 تايلاند</option>
+              <option value="+84">+84 فيتنام</option>
+              <option value="+60">+60 ماليزيا</option>
+              <option value="+65">+65 سنغافورة</option>
+              <option value="+92">+92 باكستان</option>
+              <option value="+880">+880 بنغلاديش</option>
+              <option value="+93">+93 أفغانستان</option>
+              <option value="+98">+98 إيران</option>
+              <option value="+994">+994 أذربيجان</option>
+              <option value="+998">+998 أوزبكستان</option>
+              <option value="+996">+996 قيرغيزستان</option>
+              <option value="+993">+993 تركمانستان</option>
+              <option value="+992">+992 طاجيكستان</option>
+              <option value="+370">+370 ليتوانيا</option>
+              <option value="+371">+371 لاتفيا</option>
+              <option value="+372">+372 إستونيا</option>
+              <option value="+380">+380 أوكرانيا</option>
+              <option value="+375">+375 بيلاروسيا</option>
+              <option value="+374">+374 أرمينيا</option>
+              <option value="+376">+376 أندورا</option>
+              <option value="+352">+352 لوكسمبورغ</option>
+              <option value="+353">+353 أيرلندا</option>
+              <option value="+354">+354 آيسلندا</option>
+              <option value="+356">+356 مالطا</option>
+              <option value="+357">+357 قبرص</option>
+              <option value="+359">+359 بلغاريا</option>
+              <option value="+36">+36 المجر</option>
+              <option value="+381">+381 صربيا</option>
+              <option value="+385">+385 كرواتيا</option>
+              <option value="+386">+386 سلوفينيا</option>
+              <option value="+387">+387 البوسنة والهرسك</option>
+              <option value="+389">+389 مقدونيا الشمالية</option>
+              <option value="+40">+40 رومانيا</option>
+              <option value="+421">+421 سلوفاكيا</option>
+              <option value="+423">+423 ليختنشتاين</option>
+            </optgroup>
+          </select>
+          <input type="tel" id="phoneNumber" placeholder="ادخل رقم الهاتف (10 أرقام)" required pattern="[0-9]{10}" maxlength="10">
+          <i class="bi bi-phone"></i>
+        </div>
+
+        <div class="input-box">
+          <input type="password" id="password" placeholder="كلمة المرور (8 محارف على الأقل)" required minlength="8">
+          <i class="bi bi-lock"></i>
+        </div>
+
+        <div class="input-box">
+          <input type="password" id="confirmPassword" placeholder="تأكيد كلمة المرور" required>
+          <i class="bi bi-lock-fill"></i>
+        </div>
+
+        <div class="input-box">
+          <select class="role-select" id="role" required>
+            <option value="">اختر نوع الحساب</option>
+            <option value="customer">عميل</option>
+            <option value="provider">مقدم خدمة</option>
+          </select>
+        </div>
+        <div>
+        <button type="submit" class="btn"> انشاء حساب</button>
+        </div>
+      </form>
+    </div>
+    <!------------------------------------------------------------------------------>
+    <!--لوحة التبديل بين تسجيل الدخول وإنشاء الحساب-->
+    <div class="toggle-box">
+    <!-- اللوحة اليسرى تظهر عند عرض نموذج تسجيل الدخول-->
+      <div class="toggle-panel toggle-left">
+        <h1> نـرحـب بكم، أهـلاً وسـهلاً</h1>
+        <p>ليس لديك حسـاب؟</p>
+        <button class="btn register-btn">انشـاء حسـاب</button>
+      </div>
+      <!-- اللوحة اليمنى تظهر عند عرض نموذج إنشاء الحساب-->
+
+      <div class="toggle-panel toggle-right">
+        <h1> أهـلاً بك, قم بإنشاء حساب جديد ع المنصة واستفد من خدمات الحجز الالكتروني وإدارة جميع حجوزاتك من مكان واحد</h1>
+        <p>لديك حسـاب مسبق؟</p>
+        <button class="btn login-btn">تسجيل دخول </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

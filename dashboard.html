@@ -1,0 +1,737 @@
+<!-- =========================================
+     لوحة تحكم العميل   
+     تحتوي على:
+     - القائمة الرئيسية
+     - الشريط الجانبي
+     - إدارة الحجوزات
+     - الإشعارات
+     - إعدادات الحساب
+     ========================================= -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><!-- تعريف نوع المستند HTML5 وتحديد أن لغة الصفحة العربية واتجاهها من اليمين إلى اليسار -->
+<head>
+    <meta charset="UTF-8"><!-- دعم اللغة العربية وترميز UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- جعل الصفحة متوافقة مع الهواتف والأجهزة اللوحية -->
+    <meta name="description" content="لوحة التحكم - منصة حجزي"><!-- وصف الصفحة لمحركات البحث -->
+    <title>لوحة التحكم - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!-- مكتبة Font Awesome الخاصة بالأيقونات -->
+    <link rel="stylesheet" href="style.css"><!-- استدعاء ملف التصميم الرئيسي -->
+
+    <!-- مكتبة Supabase للاتصال بقاعدة البيانات -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script><!-- إعداد الاتصال بقاعدة البيانات -->
+    <script src="auth-state.js"></script><!-- ملف إدارة حالة تسجيل دخول المستخدم -->
+</head>
+<!----------------------------------------------------------------------------------------------------------------------->
+<body class="dashboard-page">
+    <!-- شريط التنقل الرئيسي للموقع -->
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-logo">
+                <img src="Images/logo.png" alt="حجزي">
+                 
+            </a>
+            <!-- Sidebar Toggle Button -->
+            <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- روابط التنقل الرئيسية -->
+            <ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <!-- أزرار تسجيل الدخول وحجوزاتي -->
+            <div class="nav-actions">
+                <a href="dashboard.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-calendar-check"></i> حجوزاتي
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+            <!------------------------------------------------------------------------------>
+            <!-- زر القائمة الجانبية للشاشات الصغيرة -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <!----------------------------------------------------------------------------------------------------------------------->
+    <!-- القائمة الجانبية المنسدلة للأجهزة المحمولة -->
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="dashboard.html"><i class="fas fa-calendar-check"></i> حجوزاتي</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+
+    <!----------------------------------------------------------------------------------------------------------------------->
+    <!-- الشريط الجانبي الذي يحتوي على أقسام لوحة التحكم -->
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+            <div class="user-info">
+                <h3 id="userName">فدرة</h3>
+                <p id="userRole">عميل المنصة</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" onclick="showSection(event, 'profile')"><i class="fas fa-chart-bar"></i> التقارير والأحصائيات</a></li>
+                <li><a href="#" onclick="showSection(event, 'bookings')"><i class="fas fa-calendar-check"></i> الحجوزات</a></li>
+                
+                <li><a href="#" onclick="showSection(event, 'notifications')"><i class="fas fa-bell"></i> الإشعارات</a></li>
+                <li><a href="customer-services.html" id="customerServicesLink" style="display:none"><i class="fas fa-th-list"></i> استعراض الخدمات</a></li>
+                <li><a href="#" onclick="showSection(event, 'settings')"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            </ul>
+            <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+        </aside>
+        <!----------------------------------------------------------------------------------------------------------------------->
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Profile Section --><!-- قسم التقارير والإحصائيات الخاصة بالمستخدم -->
+            <div id="profile" class="section-content active">
+                <div class="simple-report-section">
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <h2 style="margin-bottom: 0.5rem;">التقارير والأحصائيات</h2>
+                    </div>
+
+                    <div id="customerReportsStatsGrid" class="stats-grid report-stats-grid"></div>
+
+                    <div class="report-panels">
+                        <div class="modern-card report-panel">
+                            <div class="report-panel-header">
+                                <h3>أداء الخدمات على المنصة</h3>
+                                <span class="status-badge status-confirmed">محدث</span>
+                            </div>
+                            <div id="customerPerformanceList" class="report-list"></div>
+                        </div>
+
+                        <div class="modern-card report-panel">
+                            <div class="report-panel-header">
+                                <h3>أحدث الأنشطة</h3>
+                                <span class="status-badge status-pending">آخر التحديثات</span>
+                            </div>
+                            <div id="customerActivityList" class="activity-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!-- Bookings Section --><!-- عرض جميع حجوزات العميل -->
+            <div id="bookings" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">الحجوزات</h2>
+                <div class="cards-grid"></div>
+            </div>
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!-- Notifications Section --><!-- عرض إشعارات العميل مع إمكانية حذف إشعار أو جميع الإشعارات -->
+            <div id="notifications" class="section-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0;">الإشعارات</h2>
+                    <button class="btn-delete" onclick="clearAllDashboardNotifications()" style="padding: 0.5rem 1rem; border: none; border-radius: var(--radius-md); cursor: pointer; background: #ef4444; color: #fff;"><i class="fas fa-trash-alt"></i> مسح الكل</button>
+                </div>
+                <div id="dashboardNotificationsContainer" class="notifications-container"></div>
+            </div>
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!-- Settings Section --><!-- تعديل بيانات الحساب وتغيير كلمة المرور -->
+            <div id="settings" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">الإعدادات</h2>
+                <div class="modern-card">
+                    <form id="settingsForm" novalidate style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-user" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    الاسم الكامل
+                                </label>
+                                <input type="text" id="fullName" 
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="fullNameError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-phone" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    رقم الهاتف
+                                </label>
+                                <input type="tel" id="phoneNumber"  pattern="[0-9]{10}"
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="phoneNumberError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-envelope" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    البريد الإلكتروني
+                                </label>
+                                <input type="email" id="email" 
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="emailError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-map-marker-alt" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    المدينة
+                                </label>
+                                <input type="text" id="city" 
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="cityError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-home" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                العنوان
+                            </label>
+                            <textarea id="address"  rows="3"
+                                style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease; resize: vertical;"></textarea>
+                            <span class="error-message" id="addressError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                        </div>
+
+                        <hr style="border: none; border-top: 2px solid #e5e7eb; margin: 1rem 0;">
+
+                        <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 1rem;">
+                            <i class="fas fa-lock" style="color: var(--primary-color); margin-left: 8px;"></i>
+                            تغيير كلمة المرور
+                        </h3>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-key" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    كلمة المرور الجديدة
+                                </label>
+                                <div style="position: relative;">
+                                    <input type="password" id="newPassword"  minlength="8"
+                                        style="width: 100%; padding: 0.875rem 3rem 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                    <i class="fas fa-eye" onclick="togglePassword('newPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                                </div>
+                                <span class="error-message" id="newPasswordError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-check-circle" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    تأكيد كلمة المرور
+                                </label>
+                                <div style="position: relative;">
+                                    <input type="password" id="confirmPassword" 
+                                        style="width: 100%; padding: 0.875rem 3rem 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                    <i class="fas fa-eye" onclick="togglePassword('confirmPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                                </div>
+                                <span class="error-message" id="confirmPasswordError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+
+                        <div id="successMessage" style="display: none; padding: 1rem; background: #dcfce7; border: 1px solid #16a34a; border-radius: var(--radius-md); color: #16a34a; font-weight: 600;">
+                            <i class="fas fa-check-circle" style="margin-left: 8px;"></i>
+                            تم حفظ التغييرات بنجاح!
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                            <button type="submit" class="card-btn" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                            <button type="button" onclick="resetForm()" class="action-btn" style="flex: 1; min-width: 200px; background: #64748b; color: white; padding: 0.875rem 1.5rem; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="fas fa-undo"></i> إعادة تعيين
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!----------------------------------------------------------------------------------------------------------------------->
+    <!-- Booking Edit Modal --><!-- نافذة منبثقة لتعديل بيانات الحجز -->
+    <div id="bookingEditModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width: 480px; width: min(92vw, 480px);">
+            <div class="modal-header">
+                <h3 id="bookingModalTitle">تأكيد الحجز</h3>
+                <button class="modal-close" type="button" onclick="closeBookingModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="bookingEditForm" style="display: flex; flex-direction: column; gap: 0.9rem;">
+                <input type="hidden" id="editBookingId">
+                <p id="editBookingServiceTitle" style="margin: 0; color: var(--text-secondary); font-weight: 600;">حجز</p>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الاسم</label>
+                    <input type="text" id="editBookingName" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">البريد الإلكتروني</label>
+                    <input type="email" id="editBookingEmail" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">رقم الهاتف</label>
+                    <input type="tel" id="editBookingPhone" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">تاريخ الحجز</label>
+                    <input type="date" id="editBookingDate" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الوقت</label>
+                    <input type="time" id="editBookingTime" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">طريقة الدفع</label>
+                    <select id="editBookingPayment" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                        <option value="paypal">PayPal</option>
+                        <option value="card">بطاقة فيزا</option>
+                    </select>
+                </div>
+                <div class="action-btns" style="justify-content: flex-end; margin-top: 0.5rem;">
+                    <button type="button" class="action-btn btn-cancel" onclick="closeBookingModal()">
+                        <i class="fas fa-times-circle"></i> إلغاء
+                    </button>
+                    <button type="submit" class="action-btn btn-add">
+                        <i class="fas fa-save"></i> حجز
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!----------------------------------------------------------------------------------------------------------------------->
+    <script src="script.js"></script>
+    <script>
+        // Customer settings: mirror provider partial-update behavior
+        // تهيئة إعدادات حساب العميل
+        // تعبئة البيانات الحالية وحفظ التعديلات
+        (function(){
+            async function initCustomerSettings() {
+                // معالجة العمليات التي قد ينتج عنها أخطاء
+                try {
+                    const settingsForm = document.getElementById('settingsForm');
+                    if (!settingsForm) return;
+                    try { settingsForm.noValidate = true; } catch(e) {}
+
+                    // fetch current user
+                    // قراءة بيانات المستخدم الحالي المخزنة محلياً
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                    if (!currentUser) return;
+
+                    // Prefill fields
+                    const fullNameEl = document.getElementById('fullName');
+                    const phoneEl = document.getElementById('phoneNumber');
+                    const emailEl = document.getElementById('email');
+                    const cityEl = document.getElementById('city');
+                    const addressEl = document.getElementById('address');
+
+                    if (fullNameEl) fullNameEl.value = currentUser.full_name || '';
+                    if (phoneEl) phoneEl.value = (currentUser.country_code || '') + (currentUser.phone || currentUser.phone_number || '');
+                    if (emailEl) emailEl.value = currentUser.email || '';
+                    if (cityEl) cityEl.value = currentUser.city || '';
+                    if (addressEl) addressEl.value = currentUser.address || '';
+
+                    if (settingsForm.__hasCustomerHandler) return;
+                    settingsForm.__hasCustomerHandler = true;
+
+                    settingsForm.addEventListener('submit', async function(e){
+                        e.preventDefault();
+                        const original = currentUser;
+                        if (!original || !original.id) { alert('تعذر الحصول على بيانات المستخدم'); return; }
+
+                        function clearFieldError(el, errEl){ if(el) el.style.border='2px solid #e5e7eb'; if(errEl){errEl.style.display='none'; errEl.textContent='';} }
+                        function setFieldError(el, errEl, msg){ if(el) el.style.border='2px solid #ef4444'; if(errEl){errEl.style.display='block'; errEl.textContent=msg;} }
+
+                        const fields = [
+                            {id:'fullName', prop:'full_name', err:'fullNameError'},
+                            {id:'phoneNumber', prop:'phone', err:'phoneNumberError'},
+                            {id:'email', prop:'email', err:'emailError'},
+                            {id:'city', prop:'city', err:'cityError'},
+                            {id:'address', prop:'address', err:'addressError'}
+                        ];
+
+                        const payload = {};
+                        let firstInvalid = null;
+
+                        for (const f of fields){
+                            const el = document.getElementById(f.id);
+                            const errEl = document.getElementById(f.err);
+                            const newVal = (el && el.value)? el.value.trim() : '';
+                            let origVal = original[f.prop] || '';
+                            if (f.prop === 'phone' && original.country_code) origVal = (original.country_code||'') + (original.phone||original.phone_number||'');
+                            origVal = String(origVal||'');
+                            if (newVal === origVal){ clearFieldError(el, errEl); continue; }
+                            if (f.prop === 'phone'){
+                                const digits = newVal.replace(/\D/g,'');
+                                if (digits.length===0){ setFieldError(el, errEl, 'رقم الهاتف مطلوب'); if(!firstInvalid) firstInvalid=el; continue; }
+                                if(!/^05\d{8}$/.test(digits)){ setFieldError(el, errEl, 'رقم الهاتف يجب أن يبدأ بـ05 ويحتوي على 10 أرقام'); if(!firstInvalid) firstInvalid=el; continue; }
+                                payload[f.prop]=digits; clearFieldError(el, errEl); continue;
+                            }
+                            if (f.prop === 'email'){
+                                if (newVal.length===0){ setFieldError(el, errEl, 'البريد الإلكتروني مطلوب'); if(!firstInvalid) firstInvalid=el; continue; }
+                                const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                if(!emailRe.test(newVal)){ setFieldError(el, errEl, 'البريد الإلكتروني غير صالح'); if(!firstInvalid) firstInvalid=el; continue; }
+                                payload[f.prop]=newVal; clearFieldError(el, errEl); continue;
+                            }
+                            if ((f.prop==='city' || f.prop==='address') && newVal.length===0){ setFieldError(el, errEl, `${f.prop==='city'?'المدينة':'العنوان'} مطلوبة`); if(!firstInvalid) firstInvalid=el; continue; }
+                            payload[f.prop]=newVal; clearFieldError(el, errEl);
+                        }
+
+                        const newPassword = (document.getElementById('newPassword')||{}).value||'';
+                        const confirmPassword = (document.getElementById('confirmPassword')||{}).value||'';
+                        const newPassEl = document.getElementById('newPassword');
+                        const confirmPassEl = document.getElementById('confirmPassword');
+                        const newPassErr = document.getElementById('newPasswordError');
+                        const confirmPassErr = document.getElementById('confirmPasswordError');
+
+                        if (newPassword || confirmPassword){
+                            if (newPassword.length < 8){ setFieldError(newPassEl, newPassErr, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'); if(!firstInvalid) firstInvalid=newPassEl; }
+                            else if (newPassword !== confirmPassword){ setFieldError(confirmPassEl, confirmPassErr, 'كلمتا المرور غير متطابقتين'); if(!firstInvalid) firstInvalid=confirmPassEl; }
+                            else { payload.password = newPassword; clearFieldError(newPassEl, newPassErr); clearFieldError(confirmPassEl, confirmPassErr); }
+                        } else { clearFieldError(newPassEl, newPassErr); clearFieldError(confirmPassEl, confirmPassErr); }
+
+                        if (firstInvalid){ firstInvalid.focus(); alert('هناك أخطاء في بعض الحقول. صححها ثم حاول مرة أخرى.'); return; }
+                        if (Object.keys(payload).length===0){ alert('لم يتم تغيير أي حقل'); return; }
+
+                        try{
+                            // إنشاء اتصال مع قاعدة بيانات Supabase
+                            const supabase = getSupabase();
+                            // تنفيذ استعلام على قاعدة البيانات
+                            const { data, error } = await supabase.from('users').update(payload).eq('id', original.id).select().single();
+                            if (error) throw error;
+                            const updatedUser = Object.assign({}, original, data || {});
+                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                            setTimeout(()=> location.reload(), 700);
+                        }catch(err){ console.error('Customer settings save error', err); alert('تعذر حفظ التغييرات. تأكد من اتصالك/إعدادات CORS.'); }
+                    });
+                }catch(e){ console.warn('initCustomerSettings failed', e); }
+            }
+            document.addEventListener('DOMContentLoaded', initCustomerSettings);
+        })();
+    </script>
+    <script>
+        // Simple HTML attribute/text escaper used in templates
+        function escapeAttribute(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // Load customer bookings dynamically
+        // جلب الحجوزات الخاصة بالمستخدم من قاعدة البيانات وعرضها
+        async function loadCustomerBookings() {
+            const containerGrid = document.querySelector('#bookings .cards-grid');
+            if (!containerGrid) return;
+            containerGrid.innerHTML = '';
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || !currentUser.id) { containerGrid.innerHTML = '<div class="empty-state">يرجى تسجيل الدخول لمشاهدة الحجوزات</div>'; return; }
+            try {
+                const supabase = getSupabase();
+                const { data: bookings, error } = await supabase.from('bookings')
+                    .select('*')
+                    .eq('customer_id', currentUser.id)
+                    .neq('status', 'cancelled')
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                if (!bookings || bookings.length===0) { containerGrid.innerHTML = '<div class="empty-state">لا توجد حجوزات حتى الآن</div>'; return; }
+                // Build readable booking cards with service title and booking_date/time
+                const parts = [];
+                for (const b of bookings) {
+                    let details = {};
+                    try { details = b.details ? JSON.parse(b.details) : {}; } catch(e){ details = {}; }
+                    const time = details.time || b.time || '';
+                    const bookingDate = b.booking_date || b.date || '';
+                    const placeName = b.booking_name || b.booking_email || 'حجز';
+
+                    // fetch service title if available
+                    let serviceTitle = '';
+                    if (b.service_id) {
+                        try {
+                            const { data: svcRow } = await getSupabase().from('services').select('*').eq('id', b.service_id).single();
+                            if (svcRow) serviceTitle = svcRow.title || svcRow.service_type || svcRow.service_name || '';
+                        } catch (e) { /* ignore */ }
+                    }
+
+                    const statusClass = (b.status==='accepted' || b.status==='confirmed') ? 'status-confirmed' : b.status==='pending' ? 'status-pending' : b.status==='rejected' ? 'status-cancelled' : 'status-cancelled';
+                    const statusText = (b.status==='accepted' || b.status==='confirmed') ? 'مؤكد' : b.status==='pending' ? 'قيد الانتظار' : b.status==='rejected' ? 'مرفوض' : 'ملغي';
+
+                    parts.push(`
+                    <div class="modern-card" data-booking-id="${b.id}">
+                        <h3 class="card-title">${escapeAttribute(placeName)}${serviceTitle ? ' - ' + escapeAttribute(serviceTitle) : ''}</h3>
+                        <p class="card-description">التاريخ: ${escapeAttribute(bookingDate)}${time ? ' - ' + escapeAttribute(time) : ''}</p>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <div class="action-btns" style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            ${b.status === 'rejected' ? `
+                                <button class="action-btn btn-delete" onclick="deleteBooking('${b.id}')"><i class="fas fa-trash"></i> حذف الحجز</button>
+                            ` : `
+                                <button class="action-btn btn-view" onclick="viewBooking('${b.id}')"><i class="fas fa-eye"></i> عرض</button>
+                                <button class="action-btn btn-edit" onclick="editBooking('${b.id}')"><i class="fas fa-edit"></i> تعديل</button>
+                                ${b.status !== 'cancelled' ? `<button class="action-btn btn-delete" onclick="cancelBooking('${b.id}')"><i class="fas fa-trash"></i> إلغاء</button>` : ''}
+                            `}
+                        </div>
+                    </div>
+                    `);
+                }
+                containerGrid.innerHTML = parts.join('');
+                const bookingsCount = document.getElementById('bookingsCount'); if (bookingsCount) bookingsCount.textContent = bookings.length;
+            } catch (err) { console.error('Failed to load customer bookings', err); containerGrid.innerHTML = '<div class="empty-state">تعذر تحميل الحجوزات.</div>'; }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        // تحميل إشعارات المستخدم وعرضها داخل لوحة التحكم
+
+        async function loadDashboardNotifications() {
+            const container = document.getElementById('dashboardNotificationsContainer');
+            if (!container) return;
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || !currentUser.id) {
+                // إنشاء عناصر HTML وعرض البيانات داخل الصفحة
+                container.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><i class="fas fa-bell-slash" style="font-size:3rem; color:var(--text-secondary); opacity:0.5; margin-bottom:1rem;"></i><p style="color:var(--text-secondary);">يرجى تسجيل الدخول لعرض الإشعارات</p></div>';
+                return;
+            }
+
+            try {
+                const notifications = await NotificationsDB.getByUser(currentUser.id);
+                const list = Array.isArray(notifications) ? notifications : [];
+                const unreadCount = list.filter(n => n.status === 'unread').length;
+                const notificationsCountEl = document.getElementById('notificationsCount');
+                if (notificationsCountEl) notificationsCountEl.textContent = unreadCount;
+
+                if (list.length === 0) {
+                    container.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><i class="fas fa-bell-slash" style="font-size:3rem; color:var(--text-secondary); opacity:0.5; margin-bottom:1rem;"></i><p style="color:var(--text-secondary);">لا توجد إشعارات حالياً</p></div>';
+                    return;
+                }
+
+                const sorted = list.slice().sort((a, b) => new Date(b.created_at || Date.now()) - new Date(a.created_at || Date.now()));
+                container.innerHTML = sorted.map(notification => {
+                    const unread = notification.status === 'unread';
+                    return `
+                        <div class="modern-card ${unread ? 'unread' : ''}" style="margin-bottom:1rem;">
+                            <h3 class="card-title" style="margin-bottom:0.75rem;">${notification.title || 'إشعار'}</h3>
+                            <p class="card-description">${notification.message || ''}</p>
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+                                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                                    <span class="status-badge ${unread ? 'status-pending' : 'status-confirmed'}">${unread ? 'غير مقروء' : 'مقروء'}</span>
+                                    <span style="font-size:0.85rem; color:var(--text-secondary);">${new Date(notification.created_at || Date.now()).toLocaleString('ar-SA')}</span>
+                                </div>
+                                <button onclick="deleteDashboardNotification('${notification.id}')" style="padding:0.35rem 0.75rem; border:none; border-radius:var(--radius-sm); background:#ef4444; color:#fff; cursor:pointer; font-size:0.85rem; font-family:'Tajawal',sans-serif; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"><i class="fas fa-trash-alt"></i> حذف</button>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load dashboard notifications', e);
+                container.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><i class="fas fa-bell-slash" style="font-size:3rem; color:var(--text-secondary); opacity:0.5; margin-bottom:1rem;"></i><p style="color:var(--text-secondary);">تعذر تحميل الإشعارات.</p></div>';
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////
+        // حذف إشعار واحد من قاعدة البيانات
+        async function deleteDashboardNotification(notificationId) {
+            if (!notificationId) return;
+            if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
+            try {
+                const supabase = getSupabase();
+                const { error } = await supabase.from('notifications').delete().eq('id', notificationId);
+                if (error) throw error;
+                await loadDashboardNotifications();
+                // عرض رسالة مناسبة في حال حدوث خطأ
+            } catch (error) {
+                console.error('Failed to delete notification:', error);
+                alert('تعذر حذف الإشعار');
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////
+        // حذف الحجز نهائياً بعد تأكيد المستخدم
+
+        async function deleteBooking(bookingId) {
+            if (!bookingId) return;
+            if (!confirm('هل أنت متأكد من حذف هذا الحجز نهائياً؟')) return;
+            try {
+                const supabase = getSupabase();
+                const { error } = await supabase.from('bookings').delete().eq('id', bookingId);
+                if (error) throw error;
+                await loadCustomerBookings();
+                alert('تم حذف الحجز بنجاح');
+            } catch (error) {
+                console.error('Failed to delete booking:', error);
+                alert('تعذر حذف الحجز');
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // حذف جميع إشعارات المستخدم دفعة واحدة
+
+        async function clearAllDashboardNotifications() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || !currentUser.id) return;
+            if (!confirm('هل أنت متأكد من مسح جميع الإشعارات؟')) return;
+            try {
+                const supabase = getSupabase();
+                const { error } = await supabase.from('notifications').delete().eq('user_id', currentUser.id);
+                if (error) throw error;
+                await loadDashboardNotifications();
+                alert('تم مسح جميع الإشعارات بنجاح');
+            } catch (error) {
+                console.error('Failed to clear all notifications:', error);
+                alert('تعذر مسح الإشعارات');
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////
+        // إنشاء التقارير والإحصائيات الخاصة بالمستخدم
+        // // يتم جلب البيانات من عدة جداول في قاعدة البيانات
+
+        async function loadCustomerReports() {
+            const statsGrid = document.getElementById('customerReportsStatsGrid');
+            const performanceList = document.getElementById('customerPerformanceList');
+            const activityList = document.getElementById('customerActivityList');
+
+            if (!statsGrid || !performanceList || !activityList) return;
+
+            statsGrid.innerHTML = '<div class="modern-card report-loading-card">جاري تحميل التقارير...</div>';
+
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                const supabase = getSupabase();
+                if (!supabase) throw new Error('Supabase client not initialized');
+                if (!currentUser || !currentUser.id) throw new Error('No current user');
+
+                const [bookingsResult, notificationsResult, approvedServicesResult, offersResult, allBookingsResult, allServicesResult, usersCountResult] = await Promise.all([
+                    supabase.from('bookings').select('*').eq('customer_id', currentUser.id).order('created_at', { ascending: false }),
+                    supabase.from('notifications').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
+                    supabase.from('services').select('*').eq('status', 'approved').order('created_at', { ascending: false }),
+                    supabase.from('offers').select('*').order('created_at', { ascending: false }),
+                    supabase.from('bookings').select('*').order('created_at', { ascending: false }),
+                    supabase.from('services').select('*').order('created_at', { ascending: false }),
+                    supabase.from('users').select('id', { count: 'exact', head: true })
+                ]);
+
+                const myBookings = Array.isArray(bookingsResult.data) ? bookingsResult.data : [];
+                const myNotifications = Array.isArray(notificationsResult.data) ? notificationsResult.data : [];
+                const approvedServices = Array.isArray(approvedServicesResult.data) ? approvedServicesResult.data : [];
+                const offers = Array.isArray(offersResult.data) ? offersResult.data : [];
+                const allBookings = Array.isArray(allBookingsResult.data) ? allBookingsResult.data : [];
+                const allServices = Array.isArray(allServicesResult.data) ? allServicesResult.data : [];
+                const platformUsersCount = usersCountResult.count || 0;
+
+                const unreadNotificationsCount = myNotifications.filter(item => item.status === 'unread').length;
+                const serviceTypeStats = allServices.reduce((acc, item) => {
+                    const key = item.service_type || 'غير محدد';
+                    acc[key] = (acc[key] || 0) + 1;
+                    return acc;
+                }, {});
+                const topServiceTypes = Object.entries(serviceTypeStats).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+                const bookingStatusStats = allBookings.reduce((acc, item) => {
+                    const key = item.status || 'غير محدد';
+                    acc[key] = (acc[key] || 0) + 1;
+                    return acc;
+                }, {});
+                const topBookingStatuses = Object.entries(bookingStatusStats).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+                statsGrid.innerHTML = `
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="report-card-content">
+                            <h3>${myBookings.length}</h3>
+                            <p>حجوزاتي</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon accent"><i class="fas fa-bell"></i></div>
+                        <div class="report-card-content">
+                            <h3>${unreadNotificationsCount}</h3>
+                            <p>إشعارات جديدة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon success"><i class="fas fa-store"></i></div>
+                        <div class="report-card-content">
+                            <h3>${approvedServices.length}</h3>
+                            <p>خدمات معتمدة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon warning"><i class="fas fa-tags"></i></div>
+                        <div class="report-card-content">
+                            <h3>${offers.length}</h3>
+                            <p>العروض المتاحة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon pink"><i class="fas fa-chart-line"></i></div>
+                        <div class="report-card-content">
+                            <h3>${allBookings.length}</h3>
+                            <p>إجمالي الحجوزات</p>
+                        </div>
+                    </div>
+
+                `;
+
+                performanceList.innerHTML = topServiceTypes.length > 0 ? topServiceTypes.map(([name, count]) => {
+                    const percent = allServices.length > 0 ? Math.round((count / allServices.length) * 100) : 0;
+                    return `
+                        <div class="report-row">
+                            <div class="report-row-head">
+                                <span>${name}</span>
+                                <strong>${count} خدمة</strong>
+                            </div>
+                            <div class="report-progress">
+                                <span style="width:${percent}%"></span>
+                            </div>
+                            <small>${percent}% من الخدمات المعتمدة</small>
+                        </div>
+                    `;
+                }).join('') : '<div class="empty-state"><i class="fas fa-chart-bar"></i><p>لا توجد بيانات كافية بعد</p></div>';
+
+                const activityItems = [
+                    ...myBookings.slice(0, 4).map(item => ({
+                        title: 'حجز جديد',
+                        subtitle: `الحالة: ${item.status || 'غير محدد'}`,
+                        time: item.created_at
+                    })),
+                    ...myNotifications.slice(0, 4).map(item => ({
+                        title: item.title || 'إشعار',
+                        subtitle: item.message || 'إشعار جديد',
+                        time: item.created_at
+                    })),
+                    ...offers.slice(0, 4).map(item => ({
+                        title: item.title || 'عرض جديد',
+                        subtitle: `العرض • ${item.status || 'نشط'}`,
+                        time: item.created_at
+                    })),
+                    ...approvedServices.slice(0, 4).map(item => ({
+                        title: item.service_type || 'خدمة',
+                        subtitle: 'خدمة معتمدة على المنصة',
+                        time: item.created_at
+                    }))
+                ].sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0)).slice(0, 8);
+
+                activityList.innerHTML = activityItems.length > 0 ? activityItems.map(item => `
+                    <div class="activity-item">
+                        <div class="activity-badge"><i class="fas fa-bolt"></i></div>
+                        <div class="activity-content">
+                            <h4>${item.title}</h4>
+                            <p>${item.subtitle}</p>
+                        </div>
+                        <span class="activity-time">${new Date(item.time || Date.now()).toLocaleDateString('ar-SA')}</span>
+                    </div>
+                `).join('') : '<div class="empty-state"><i class="fas fa-history"></i><p>لا توجد أنشطة حديثة بعد</p></div>';
+            } catch (error) {
+                console.error('Error loading customer reports:', error);
+                statsGrid.innerHTML = '<div class="modern-card report-loading-card">تعذر تحميل التقارير مؤقتًا. يرجى المحاولة لاحقًا.</div>';
+                performanceList.innerHTML = '<div class="empty-state">تعذر تحميل البيانات</div>';
+                activityList.innerHTML = '<div class="empty-state">تعذر تحميل الأنشطة</div>';
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+        // تنفيذ تحميل البيانات مباشرة بعد اكتمال تحميل الصفحة
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await loadCustomerBookings();
+            await loadDashboardNotifications();
+            await loadCustomerReports();
+        });
+    </script>
+</body>
+</html>
