@@ -111,7 +111,7 @@ function handleLogout(e) {
         alert('تم تسجيل الخروج بنجاح');
 
         // العودة إلى الصفحة الرئيسية
-        window.location.href = 'home.html';
+        window.location.href = 'index.html';
     }
 }
 // ============================================
