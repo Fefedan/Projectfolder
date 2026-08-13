@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="لوحة مقدم الخدمة - منصة حجزي">
+    <title>لوحة مقدم الخدمة - حجزي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-state.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Dynamic Navbar -->
+    <nav class="modern-navbar" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="Images/logo.svg" alt="حجزي">
+                 
+            </a>
+            <!-- Sidebar Toggle Button -->
+            <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links">
+                <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="provider.html" class="nav-btn nav-btn-secondary">
+                    <i class="fas fa-cog"></i> لوحة التحكم
+                </a>
+                <a href="login.html" class="nav-btn nav-btn-primary auth-login-btn">
+                    <i class="fas fa-user-circle"></i> تسجيل الدخول
+                </a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="home.html"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="aboutus.html"><i class="fas fa-info-circle"></i> من نحن</a>
+        <a href="contactus.html"><i class="fas fa-envelope"></i> تواصل معنا</a>
+        <a href="provider.html"><i class="fas fa-cog"></i> لوحة التحكم</a>
+        <a href="login.html" class="mobile-auth-login-btn"><i class="fas fa-user-circle"></i> تسجيل الدخول</a>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+            <div class="user-info">
+                <h3 id="userName">صالون نساء صغيرات</h3>
+                <p id="userRole">مقدم خدمة</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" onclick="showSection(event, 'profile')"><i class="fas fa-chart-bar"></i> التقارير والأحصائيات</a></li>
+                <li><a href="#" onclick="showSection(event, 'Services')"><i class="fas fa-cog"></i> إدارة الخدمات</a></li>
+                <li><a href="#" onclick="showSection(event, 'bookings')"><i class="fas fa-calendar-check"></i> الحجوزات الواردة</a></li>
+                <li><a href="#" onclick="showSection(event, 'offers')"><i class="fas fa-tag"></i> إدارة العروض والأسعار</a></li>
+                <li><a href="all-services.html"><i class="fas fa-store"></i> جميع الخدمات على المنصة</a></li>
+                <li><a href="#" onclick="showSection(event, 'notificationsprovider')"><i class="fas fa-bell"></i> الإشعارات</a></li>
+                <li><a href="#" onclick="showSection(event, 'settings')"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            </ul>
+            <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Profile Section -->
+            <div id="profile" class="section-content active">
+                <div class="simple-report-section">
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <h2 style="margin-bottom: 0.5rem;">التقارير والإحصائيات</h2>
+                    </div>
+
+                    <div id="providerReportsStatsGrid" class="stats-grid report-stats-grid"></div>
+
+                    <div class="report-panels">
+                        <div class="modern-card report-panel">
+                            <div class="report-panel-header">
+                                <h3>توزيع خدماتك</h3>
+                                <span class="status-badge status-confirmed">حالي</span>
+                            </div>
+                            <div id="providerPerformanceList" class="report-list"></div>
+                        </div>
+
+                        <div class="modern-card report-panel">
+                            <div class="report-panel-header">
+                                <h3>أحدث الأنشطة</h3>
+                                <span class="status-badge status-pending">آخر التحديثات</span>
+                            </div>
+                            <div id="providerActivityList" class="activity-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div id="Services" class="section-content">
+                <div class="section-header" style="margin-bottom: 1.5rem;">
+                    <h2 style="margin-bottom: 0.5rem;">إدارة الخدمات</h2>
+                    <p class="section-subtitle">أضف خدماتك الجديدة واطلع على ما تم نشره من خدماتك مباشرة.</p>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="modern-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <h3 class="card-title" style="margin:0;">إضافة خدمة جديدة</h3>
+                            <button type="button" id="toggleServiceFormBtn" class="card-btn" onclick="toggleServiceForm()">
+                                <i class="fas fa-plus-circle"></i> إضافة خدمة
+                            </button>
+                        </div>
+
+                        <div id="serviceFormContainer" style="display:none;">
+                            <form id="serviceForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                            
+                                <div class="form-group">
+                                    <label class="form-label" for="serviceTitle">عنوان الخدمة *</label>
+                                    <input type="text" id="serviceTitle" required class="form-input"
+                                     placeholder="مثال: تصفيف شعر - عناية يومية">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="serviceType">فئة الخدمة *</label>
+                                    <select id="serviceType" required class="form-input">
+                                        <option value="">اختر فئة الخدمة</option>
+                                        <option value="hotel">فندق</option>
+                                        <option value="gym">نادي</option>
+                                        <option value="salon">صالون</option>
+                                        <option value="restaurant">مطعم</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">صورة الخدمة (اختياري)</label>
+                                    <div id="serviceImageDropzone" class="image-dropzone" style="border: 2px dashed #cbd5e1; border-radius: 16px; padding: 1rem; text-align: center; cursor: pointer; background: #f8fafc;">
+                                        <input type="file" id="serviceImageInput" accept="image/*" style="display:none;">
+                                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                                        <p style="margin: 0 0 0.3rem; color: var(--text-primary);">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>
+                                        <small style="color: var(--text-secondary);">يدعم JPG, PNG, WEBP</small>
+                                    </div>
+                                    <div id="serviceImagePreviewContainer" style="display:none; margin-top:0.75rem;">
+                                        <img id="serviceImagePreview" src="" alt="معاينة الصورة" style="max-width: 100%; max-height: 220px; border-radius: 12px; object-fit: cover; border: 1px solid #e5e7eb;">
+                                        <div style="margin-top:0.5rem;">
+                                            <button type="button" class="action-btn btn-cancel" onclick="clearServiceImageSelection()" style="padding: 0.45rem 0.85rem; font-size: 0.9rem;"><i class="fas fa-times"></i> حذف الصورة</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="serviceDescription">وصف الخدمة *</label>
+                                    <textarea id="serviceDescription" required class="form-textarea" rows="4" placeholder="اكتب وصفًا واضحًا للخدمة"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="serviceLocation">الموقع *</label>
+                                    <input type="text" id="serviceLocation" required class="form-input" placeholder="مثال: الرياض - حي الملز">
+                                </div>
+                                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="servicePrice">السعر (ر.س) *</label>
+                                        <input type="number" id="servicePrice" required min="0" step="0.01" class="form-input" placeholder="مثال: 150">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="serviceDuration">مدة الخدمة *</label>
+                                        <input type="text" id="serviceDuration" required class="form-input" placeholder="مثال: 60 دقيقة">
+                                    </div>
+                                </div>
+                                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="workingDays">أيام العمل *</label>
+                                        <select id="workingDays" required class="form-input">
+                                            <option value="">اختر أيام العمل</option>
+                                            <option value="السبت - الخميس">السبت - الخميس</option>
+                                            <option value="الأحد - الخميس">الأحد - الخميس</option>
+                                            <option value="السبت - الأربعاء">السبت - الأربعاء</option>
+                                            <option value="جميع أيام الأسبوع">جميع أيام الأسبوع</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="workingTime">أوقات العمل *</label>
+                                        <input type="text" id="workingTime" required class="form-input" placeholder="مثال: 09:00 - 18:00">
+                                    </div>
+                                </div>
+                                <div id="serviceFormMessage" class="form-message" style="display:none;"></div>
+                                <div class="action-btns" style="justify-content:flex-end;">
+                                    <button type="button" class="action-btn btn-cancel" onclick="resetServiceForm()"><i class="fas fa-times-circle"></i> إلغاء</button>
+                                    <button type="submit" class="action-btn btn-add"><i class="fas fa-plus-circle"></i> حفظ الخدمة</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="modern-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <h3 class="card-title" style="margin:0;">خدماتي الحالية</h3>
+                            <button type="button" class="card-btn" onclick="refreshProviderServices()"><i class="fas fa-sync-alt"></i> تحديث</button>
+                        </div>
+                        <div id="servicesList" class="service-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Section -->
+            <div id="bookings" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">الحجوزات الواردة</h2>
+                <div id="incomingBookingsContainer" class="cards-grid"></div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div id="notificationsprovider" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">الإشعارات</h2>
+                
+                <!-- Send Notification Card -->
+                <!-- <div class="modern-card">
+                    <h3 class="card-title">إرسال إشعار جديد</h3>
+                    <form id="sendNotificationForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">نوع الإرسال *</label>
+                            <select id="notificationSendType" required onchange="toggleUserSelect()" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                                <option value="all">إرسال لجميع المستخدمين</option>
+                                <option value="specific">إرسال لمستخدم معين</option>
+                            </select>
+                        </div>
+                        <div id="userSelectContainer" style="display: none;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اختر المستخدم *</label>
+                            <select id="userSelect" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                                <option value="">اختر المستخدم</option>
+                                <option value="1">سارة أحمد</option>
+                                <option value="2">أحمد محمد</option>
+                                <option value="3">فاطمة علي</option>
+                                <option value="4">خالد عمر</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">عنوان الإشعار *</label>
+                            <input type="text" id="notificationTitle" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">نص الإشعار *</label>
+                            <textarea id="notificationMessage" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); min-height: 100px;"></textarea>
+                        </div>
+                        <button type="submit" class="card-btn"><i class="fas fa-paper-plane"></i> إرسال الإشعار</button>
+                    </form>
+                </div>
+                 -->
+                <!-- Received Notifications -->
+                <h3 style="margin: 2rem 0 1rem 0;">الإشعارات الواردة</h3>
+                
+                <!-- Notification Filter -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="notification-filter-btn active" data-filter="all" onclick="filterNotifications('all')">الكل</button>
+                    <button class="notification-filter-btn" data-filter="unread" onclick="filterNotifications('unread')">غير مقروءة</button>
+                    <button class="notification-filter-btn" type="button" onclick="markAllProviderNotificationsAsRead()">تعيين الكل مقروء</button>
+                </div>
+                
+                <!-- Notifications Container -->
+                <div id="notificationsContainer">
+                    <!-- Notifications will be loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">الإعدادات</h2>
+                <div class="modern-card">
+                    <form id="settingsForm" novalidate style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-user" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    الاسم الكامل
+                                </label>
+                                <input type="text" id="fullName"
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="fullNameError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-phone" style="color: var(--primary-color); margin-left: 8px;"></i> رقم الهاتف
+                                </label>
+                                <input type="tel" id="phoneNumber"  pattern="[0-9]{10}"
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="phoneNumberError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-envelope" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    البريد الإلكتروني
+                                </label>
+                                <input type="email" id="email"
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="emailError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-map-marker-alt" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    المدينة
+                                </label>
+                                <input type="text" id="city" 
+                                    style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                <span class="error-message" id="cityError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-home" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                العنوان
+                            </label>
+                            <textarea id="address"  rows="3"
+                                style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease; resize: vertical;"></textarea>
+                            <span class="error-message" id="addressError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                        </div>
+
+                        <hr style="border: none; border-top: 2px solid #e5e7eb; margin: 1rem 0;">
+
+                        <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 1rem;">
+                            <i class="fas fa-lock" style="color: var(--primary-color); margin-left: 8px;"></i>
+                            تغيير كلمة المرور
+                        </h3>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-key" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    كلمة المرور الجديدة
+                                </label>
+                                <div style="position: relative;">
+                                    <input type="password" id="newPassword"
+                                        style="width: 100%; padding: 0.875rem 3rem 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                    <i class="fas fa-eye" onclick="togglePassword('newPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                                </div>
+                                <span class="error-message" id="newPasswordError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                    <i class="fas fa-check-circle" style="color: var(--primary-color); margin-left: 8px;"></i>
+                                    تأكيد كلمة المرور
+                                </label>
+                                <div style="position: relative;">
+                                    <input type="password" id="confirmPassword" 
+                                        style="width: 100%; padding: 0.875rem 3rem 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); font-family: 'Tajawal', sans-serif; transition: all 0.3s ease;">
+                                    <i class="fas fa-eye" onclick="togglePassword('confirmPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                                </div>
+                                <span class="error-message" id="confirmPasswordError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+
+                        <div id="successMessage" style="display: none; padding: 1rem; background: #dcfce7; border: 1px solid #16a34a; border-radius: var(--radius-md); color: #16a34a; font-weight: 600;">
+                            <i class="fas fa-check-circle" style="margin-left: 8px;"></i>
+                            تم حفظ التغييرات بنجاح!
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                            <button type="submit" class="card-btn" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                            <button type="button" onclick="resetForm()" class="action-btn" style="flex: 1; min-width: 200px; background: #64748b; color: white; padding: 0.875rem 1.5rem; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="fas fa-undo"></i> إعادة تعيين
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Offers Section -->
+            <div id="offers" class="section-content">
+                <h2 style="margin-bottom: 1.5rem;">إدارة العروض والخصومات</h2>
+                <button class="card-btn" onclick="openOfferModal()" style="margin-bottom: 1.5rem;"><i class="fas fa-plus"></i> إضافة عرض جديد</button>
+                <div class="dashboard-card">
+                    <h3>جدول العروض</h3>
+                    <div class="table-container">
+                        <table class="offers-table">
+                            <thead>
+                                <tr>
+                                    <th>العرض</th>
+                                    <th>الخصم</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="offersTableBody">
+                                <!-- Offers will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offer Modal -->
+            <div id="offerModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modalTitle">إضافة عرض جديد</h3>
+                        <button class="modal-close" onclick="closeOfferModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form id="offerForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <input type="hidden" id="offerId">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اسم العرض *</label>
+                            <input type="text" id="offerName" required  style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">قيمة الخصم *</label>
+                            <div style="position: relative;">
+                                <input type="number" id="offerDiscount" min="1" max="100" required style="width: 100%; padding: 0.75rem; padding-left: 2.5rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md); box-sizing: border-box;">
+                                <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #6b7280; font-weight: bold; pointer-events: none;">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">صورة العرض (اختياري)</label>
+                            <div id="offerImageDropzone" class="image-dropzone" style="border: 2px dashed #cbd5e1; border-radius: 16px; padding: 1rem; text-align: center; cursor: pointer; background: #f8fafc;">
+                                <input type="file" id="offerImageInput" accept="image/*" style="display:none;">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                                <p style="margin: 0 0 0.3rem; color: var(--text-primary);">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>
+                                <small style="color: var(--text-secondary);">يدعم JPG, PNG, WEBP</small>
+                            </div>
+                            <div id="offerImagePreviewContainer" style="display:none; margin-top:0.75rem;">
+                                <img id="offerImagePreview" src="" alt="معاينة الصورة" style="max-width: 100%; max-height: 220px; border-radius: 12px; object-fit: cover; border: 1px solid #e5e7eb;">
+                                <div style="margin-top:0.5rem;">
+                                    <button type="button" class="action-btn btn-cancel" onclick="clearOfferImageSelection()" style="padding: 0.45rem 0.85rem; font-size: 0.9rem;"><i class="fas fa-times"></i> حذف الصورة</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الحالة *</label>
+                            <select id="offerStatus" required style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: var(--radius-md);">
+                                <option value="active">نشط</option>
+                                <option value="expired">منتهي</option>
+                            </select>
+                        </div>
+                        <div class="action-btns" style="justify-content: flex-end;">
+                            <button type="button" class="action-btn btn-cancel" onclick="closeOfferModal()">
+                                <i class="fas fa-times-circle"></i> إلغاء
+                            </button>
+                            <button type="submit" class="action-btn btn-add">
+                                <i class="fas fa-plus-circle"></i> حفظ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function parseBookingDetails(rawDetails) {
+            if (!rawDetails) return {};
+            try {
+                return typeof rawDetails === 'string' ? JSON.parse(rawDetails) : rawDetails;
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function isBookingForProvider(booking, providerServiceIds, providerOfferIds) {
+            if (!booking) return false;
+            const details = parseBookingDetails(booking.details);
+            const linkedServiceId = booking.service_id;
+            const linkedOfferId = details.offer_id;
+            const matchesService = Boolean(linkedServiceId && providerServiceIds.includes(linkedServiceId));
+            const matchesOffer = Boolean(linkedOfferId && providerOfferIds.includes(linkedOfferId));
+            return matchesService || matchesOffer;
+        }
+
+        async function loadIncomingBookings() {
+            const container = document.getElementById('incomingBookingsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            try {
+                const currentProvider = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!currentProvider || !currentProvider.id) { container.innerHTML = '<div class="empty-state">يرجى تسجيل الدخول.</div>'; return; }
+                const supabase = getSupabase();
+
+                const services = await ServicesDB.getByProvider(currentProvider.id);
+                const serviceIds = Array.isArray(services) ? services.map(s => s.id).filter(Boolean) : [];
+
+                const { data: providerOffers, error: offersError } = await supabase
+                    .from('offers')
+                    .select('id')
+                    .eq('provider_id', currentProvider.id);
+                if (offersError) throw offersError;
+                const providerOfferIds = Array.isArray(providerOffers) ? providerOffers.map(item => item.id).filter(Boolean) : [];
+
+                const { data: allPendingBookings, error: bookingsError } = await supabase
+                    .from('bookings')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+                if (bookingsError) throw bookingsError;
+
+                const bookings = Array.isArray(allPendingBookings)
+                    ? allPendingBookings.filter(item => isBookingForProvider(item, serviceIds, providerOfferIds))
+                    : [];
+
+                if (bookings.length === 0) { container.innerHTML = '<div class="empty-state">لا توجد حجوزات جديدة</div>'; return; }
+
+                // Enrich bookings with customer and service info for clearer display
+                const parts = [];
+                for (const b of bookings) {
+                    const details = parseBookingDetails(b.details);
+                    const time = details.time || b.time || '';
+                    const displayDate = b.booking_date || b.date || '';
+
+                    // fetch customer info if we have customer_id
+                    let customerName = b.booking_name || '';
+                    let customerPhone = b.customer_phone || details.phone || '';
+                    let customerEmail = b.customer_email || '';
+                    if (b.customer_id) {
+                        try {
+                            const { data: userRow } = await supabase.from('users').select('full_name,email,phone,country_code').eq('id', b.customer_id).single();
+                            if (userRow) {
+                                customerName = customerName || userRow.full_name || userRow.email || 'عميل';
+                                customerPhone = customerPhone || (userRow.country_code || '') + (userRow.phone || '');
+                                customerEmail = customerEmail || userRow.email || '';
+                            }
+                        } catch (e) { /* ignore */ }
+                    }
+
+                    // fetch service title for readability
+                    let serviceTitle = details.offer_title || '';
+                    if (b.service_id) {
+                        try {
+                            const { data: svcRow } = await supabase.from('services').select('service_type,title').eq('id', b.service_id).single();
+                            if (svcRow) serviceTitle = svcRow.title || svcRow.service_type || serviceTitle;
+                        } catch (e) { /* ignore */ }
+                    } else if (details.offer_id) {
+                        try {
+                            const { data: offerRow } = await supabase.from('offers').select('title').eq('id', details.offer_id).single();
+                            if (offerRow?.title) serviceTitle = offerRow.title;
+                        } catch (e) { /* ignore */ }
+                    }
+
+                    parts.push(`
+                    <div class="modern-card" data-booking-id="${b.id}">
+                        <h3 class="card-title">${escapeAttribute(customerName || 'عميل')}</h3>
+                        <p class="card-description"><strong>الخدمة:</strong> ${escapeAttribute(serviceTitle)}</p>
+                        <p class="card-description"><strong>التاريخ:</strong> ${escapeAttribute(displayDate)}</p>
+                        <p class="card-description"><strong>الوقت:</strong> ${escapeAttribute(time)}</p>
+                        <p class="card-description"><strong>البريد:</strong> ${escapeAttribute(customerEmail)}</p>
+                        <p class="card-description"><strong>هاتف:</strong> ${escapeAttribute(customerPhone)}</p>
+                        <p class="card-description"><strong>الحالة:</strong> ${escapeAttribute(b.status || '')}</p>
+                        <div class="action-btns" style="margin-top: 1rem; display:flex; gap:0.5rem; justify-content:flex-end;">
+                            <button class="action-btn btn-accept" onclick="acceptBooking('${b.id}')"><i class="fas fa-check"></i> قبول</button>
+                            <button class="action-btn btn-reject" onclick="rejectBooking('${b.id}')"><i class="fas fa-times"></i> رفض</button>
+                        </div>
+                    </div>
+                    `);
+                }
+
+                container.innerHTML = parts.join('');
+            } catch (err) { console.error('Failed to load incoming bookings', err); container.innerHTML = '<div class="empty-state">تعذر تحميل الحجوزات.</div>'; }
+        }
+
+        async function acceptBooking(bookingId) {
+            if (!bookingId) return;
+            if (!confirm('هل تريد قبول هذا الحجز؟')) return;
+            try {
+                const updated = await BookingsDB.update(bookingId, { status: 'accepted' });
+                // notify customer
+                try {
+                    const supabase = getSupabase();
+                    // fetch booking to get customer_id/email
+                    const { data: booking } = await supabase.from('bookings').select('*').eq('id', bookingId).single();
+                    let userId = booking.customer_id;
+                    if (!userId && booking.customer_email) {
+                        const { data: userRow } = await supabase.from('users').select('id').eq('email', booking.customer_email).limit(1).single();
+                        if (userRow && userRow.id) userId = userRow.id;
+                    }
+                    if (userId) {
+                        let details = {};
+                        try { details = booking.details ? JSON.parse(booking.details) : {}; } catch(e) { details = {}; }
+                        const time = details.time || booking.time || '';
+                        const bookingDate = booking.booking_date || booking.date || '';
+
+                        let serviceTitle = booking.service_id || '';
+                        if (booking.service_id) {
+                            const { data: svcRow } = await supabase.from('services').select('title,service_type').eq('id', booking.service_id).single();
+                            serviceTitle = svcRow?.title || svcRow?.service_type || serviceTitle;
+                        }
+
+                        await NotificationsDB.add({
+                            user_id: userId,
+                            type: 'booking',
+                            title: 'تم قبول حجزك',
+                            message: `تم قبول حجزك${serviceTitle ? ' لِ ' + serviceTitle : ''}${bookingDate ? ' بتاريخ ' + bookingDate : ''}${time ? ' الساعة ' + time : ''}`,
+                            status: 'unread'
+                        });
+                    }
+                } catch (nerr) { console.warn('Failed to notify customer', nerr); }
+                await loadIncomingBookings();
+                alert('تم قبول الحجز');
+            } catch (err) { console.error('Accept booking failed', err); alert('تعذر قبول الحجز'); }
+        }
+
+        async function rejectBooking(bookingId) {
+            if (!bookingId) return;
+            if (!confirm('هل تريد رفض هذا الحجز؟')) return;
+            try {
+                await BookingsDB.update(bookingId, { status: 'rejected' });
+                // notify customer similar to accept
+                try {
+                    const supabase = getSupabase();
+                    const { data: booking } = await supabase.from('bookings').select('*').eq('id', bookingId).single();
+                    let userId = booking.customer_id;
+                    if (!userId && booking.customer_email) {
+                        const { data: userRow } = await supabase.from('users').select('id').eq('email', booking.customer_email).limit(1).single();
+                        if (userRow && userRow.id) userId = userRow.id;
+                    }
+                    if (userId) {
+                        let details = {};
+                        try { details = booking.details ? JSON.parse(booking.details) : {}; } catch(e) { details = {}; }
+                        const time = details.time || booking.time || '';
+                        const bookingDate = booking.booking_date || booking.date || '';
+
+                        let serviceTitle = booking.service_id || '';
+                        if (booking.service_id) {
+                            const { data: svcRow } = await supabase.from('services').select('title,service_type').eq('id', booking.service_id).single();
+                            serviceTitle = svcRow?.title || svcRow?.service_type || serviceTitle;
+                        }
+
+                        await NotificationsDB.add({
+                            user_id: userId,
+                            type: 'booking',
+                            title: 'تم رفض حجزك',
+                            message: `تم رفض حجزك${serviceTitle ? ' لِ ' + serviceTitle : ''}${bookingDate ? ' بتاريخ ' + bookingDate : ''}${time ? ' الساعة ' + time : ''}`,
+                            status: 'unread'
+                        });
+                    }
+                } catch (nerr) { console.warn('Failed to notify customer', nerr); }
+                await loadIncomingBookings();
+                alert('تم رفض الحجز');
+            } catch (err) { console.error('Reject booking failed', err); alert('تعذر رفض الحجز'); }
+        }
+        // Initialize Supabase
+        const supabaseInstance = getSupabase();
+
+        // Global functions for offer management
+        // Open offer modal for new offer
+        window.openOfferModal = function() {
+            document.getElementById('offerModal').style.display = 'flex';
+            document.getElementById('modalTitle').textContent = 'إضافة عرض جديد';
+            document.getElementById('offerForm').reset();
+            document.getElementById('offerId').value = '';
+            clearOfferImageSelection();
+            bindOfferImageControls();
+        }
+
+        // Close offer modal
+        window.closeOfferModal = function() {
+            document.getElementById('offerModal').style.display = 'none';
+            clearOfferImageSelection();
+        }
+
+        // Edit offer
+        window.editOffer = async function(offerId) {
+            try {
+                const offer = await OffersDB.getById(offerId);
+                if (offer) {
+                    document.getElementById('offerModal').style.display = 'flex';
+                    document.getElementById('modalTitle').textContent = 'تعديل العرض';
+                    document.getElementById('offerId').value = offer.id;
+                    document.getElementById('offerName').value = offer.title;
+                    document.getElementById('offerDiscount').value = offer.discount_percentage;
+                    document.getElementById('offerStatus').value = offer.status;
+                    
+                    // Handle existing image
+                    editingOfferImageUrl = offer.image_url || '';
+                    if (offer.image_url) {
+                        const preview = document.getElementById('offerImagePreview');
+                        const previewContainer = document.getElementById('offerImagePreviewContainer');
+                        const dropzone = document.getElementById('offerImageDropzone');
+                        if (preview) preview.src = offer.image_url;
+                        if (previewContainer) previewContainer.style.display = 'block';
+                        if (dropzone) {
+                            dropzone.innerHTML = '<input type="file" id="offerImageInput" accept="image/*" style="display:none;">\n<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>\n<p style="margin: 0 0 0.3rem; color: var(--text-primary);">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>\n<small style="color: var(--text-secondary);">يدعم JPG, PNG, WEBP</small>';
+                        }
+                    }
+                    
+                    bindOfferImageControls();
+                }
+            } catch (error) {
+                console.error('Error loading offer:', error);
+                alert('حدث خطأ أثناء تحميل العرض');
+            }
+        }
+
+        // Delete offer
+        window.deleteOffer = async function(offerId) {
+            if (confirm('هل أنت متأكد من حذف هذا العرض؟')) {
+                try {
+                    await OffersDB.delete(offerId);
+                    alert('تم حذف العرض بنجاح');
+                    
+                    // Reload offers
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    const offers = await OffersDB.getByProvider(currentUser.id);
+                    window.loadOffersFromDB(offers);
+                    window.loadOffersTable(offers);
+                } catch (error) {
+                    console.error('Error deleting offer:', error);
+                    alert('حدث خطأ أثناء حذف العرض');
+                }
+            }
+        }
+
+        // Load offers from database
+        window.loadOffersFromDB = function(offers) {
+            const offersContainer = document.querySelector('#offers .cards-grid');
+            
+            if (!offersContainer) {
+                console.warn('Offers container not found:', offers);
+                return;
+            }
+            
+            if (offers.length === 0) {
+                offersContainer.innerHTML = `
+                    <div class="modern-card" style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-tags" style="font-size: 3rem; color: var(--text-secondary); opacity: 0.5; margin-bottom: 1rem;"></i>
+                        <p style="color: var(--text-secondary);">لا توجد عروض حالياً</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let offersHTML = '';
+            offers.forEach(offer => {
+                const statusClass = offer.status === 'active' ? 'status-confirmed' : 'status-cancelled';
+                const statusText = offer.status === 'active' ? 'نشط' : 'منتهي';
+                const offerImage = offer.image_url ? escapeHtml(offer.image_url) : 'Images/logo.svg';
+                
+                offersHTML += `
+                    <div class="modern-card hover-lift" data-offer-id="${offer.id}" style="display:flex; flex-direction:column; gap:0.5rem; overflow:hidden;">
+                        ${offer.image_url ? `<img src="${offerImage}" alt="${escapeHtml(offer.title || 'عرض')}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">` : '<img src="Images/logo.svg" alt="'+escapeHtml(offer.title || 'عرض')+'" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">'}
+                        
+                        <div style="padding: 0.5rem 0;">
+                            <h3 class="card-title" style="margin:0.5rem 0;">${escapeHtml(offer.title || 'عرض')}</h3>
+                            <p class="card-description" style="margin:0.25rem 0;">${escapeHtml(offer.description || 'احصل على أفضل الخصومات الآن!')}</p>
+                            <div style="font-size:1.2rem; color:#10b981; font-weight:700; margin:0.5rem 0;">خصم ${escapeHtml(offer.discount_percentage || 0)}%</div>
+                            <small style="color:var(--text-secondary);">صالح حتى: ${offer.end_date ? new Date(offer.end_date).toLocaleDateString('ar-SA') : 'غير محدد'}</small>
+                        </div>
+
+                        <div style="padding: 0.5rem 0;">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            offersContainer.innerHTML = offersHTML;
+        }
+
+        // Load offers into the offers table
+        window.loadOffersTable = function(offers) {
+            const offersTableBody = document.getElementById('offersTableBody');
+            
+            if (!offersTableBody) {
+                console.warn('Offers table body not found');
+                return;
+            }
+            
+            if (offers.length === 0) {
+                offersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            لا توجد عروض حالياً
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let tableHTML = '';
+            offers.forEach(offer => {
+                let statusClass = '';
+                let statusText = '';
+                
+                if (offer.status === 'active') {
+                    statusClass = 'status-confirmed';
+                    statusText = 'نشط';
+                } else if (offer.status === 'expired') {
+                    statusClass = 'status-cancelled';
+                    statusText = 'منتهي';
+                } else if (offer.status === 'pending') {
+                    statusClass = 'status-pending';
+                    statusText = 'بانتظار الموافقة';
+                } else if (offer.status === 'rejected') {
+                    statusClass = 'status-cancelled';
+                    statusText = 'مرفوض';
+                }
+                
+                tableHTML += `
+                    <tr data-offer-id="${offer.id}">
+                        <td>${offer.title}</td>
+                        <td>${offer.discount_percentage}%</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button onclick="window.editOffer('${offer.id}')" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 0.5rem;">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                            <button onclick="window.deleteOffer('${offer.id}')" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            offersTableBody.innerHTML = tableHTML;
+        }
+
+        async function loadProviderReports() {
+            const statsGrid = document.getElementById('providerReportsStatsGrid');
+            const performanceList = document.getElementById('providerPerformanceList');
+            const activityList = document.getElementById('providerActivityList');
+
+            if (!statsGrid || !performanceList || !activityList) return;
+
+            statsGrid.innerHTML = '<div class="modern-card report-loading-card">جاري تحميل التقارير...</div>';
+
+            try {
+                const supabase = getSupabase();
+                if (!supabase) throw new Error('Supabase client not initialized');
+
+                const provider = currentProviderUser || JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!provider || !provider.id) throw new Error('No provider user');
+
+                const getSafeCount = async (table, column = null, value = null) => {
+                    try {
+                        let query = supabase.from(table).select('id', { count: 'exact', head: true });
+                        if (column && value !== null) {
+                            query = query.eq(column, value);
+                        }
+                        const { count, error } = await query;
+                        if (error) throw error;
+                        return count || 0;
+                    } catch (error) {
+                        console.warn(`Unable to count ${table}:`, error);
+                        return 0;
+                    }
+                };
+                const { data: providerServices, error: providerServicesError } = await supabase
+                    .from('services')
+                    .select('id, status, service_type, created_at')
+                    .eq('provider_id', provider.id)
+                    .order('created_at', { ascending: false });
+
+                if (providerServicesError) throw providerServicesError;
+
+                const providerServiceIds = Array.isArray(providerServices) ? providerServices.map(item => item.id) : [];
+                const { data: providerOffers, error: offersError } = await supabase
+                    .from('offers')
+                    .select('id, title, created_at, status')
+                    .eq('provider_id', provider.id)
+                    .order('created_at', { ascending: false });
+
+                if (offersError) throw offersError;
+
+                const providerOfferIds = Array.isArray(providerOffers) ? providerOffers.map(item => item.id).filter(Boolean) : [];
+                const { data: pendingBookingsData, error: bookingsError } = await supabase
+                    .from('bookings')
+                    .select('id, created_at, service_id, details, status')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+
+                if (bookingsError) throw bookingsError;
+                const providerBookings = Array.isArray(pendingBookingsData)
+                    ? pendingBookingsData.filter(item => isBookingForProvider(item, providerServiceIds, providerOfferIds))
+                    : [];
+
+                const { data: providerNotifications, error: notificationsError } = await supabase
+                    .from('notifications')
+                    .select('id, status')
+                    .eq('user_id', provider.id);
+
+                if (notificationsError) throw notificationsError;
+
+                const [platformUsersCount, platformServicesCount, platformBookingsCount, platformOffersCount] = await Promise.all([
+                    getSafeCount('users'),
+                    getSafeCount('services'),
+                    getSafeCount('bookings'),
+                    getSafeCount('offers')
+                ]);
+
+                const myServicesCount = Array.isArray(providerServices) ? providerServices.length : 0;
+                const approvedServicesCount = Array.isArray(providerServices) ? providerServices.filter(item => item.status === 'approved').length : 0;
+                const pendingServicesCount = Array.isArray(providerServices) ? providerServices.filter(item => item.status === 'pending').length : 0;
+                const rejectedServicesCount = Array.isArray(providerServices) ? providerServices.filter(item => item.status === 'rejected').length : 0;
+                const incomingBookingsCount = Array.isArray(providerBookings) ? providerBookings.length : 0;
+                const myOffersCount = Array.isArray(providerOffers) ? providerOffers.length : 0;
+                const unreadNotificationsCount = Array.isArray(providerNotifications)
+                    ? providerNotifications.filter(item => item.status !== 'read').length
+                    : 0;
+
+                const serviceStatusItems = [
+                    { label: 'موافقة', count: approvedServicesCount, percent: myServicesCount > 0 ? Math.round((approvedServicesCount / myServicesCount) * 100) : 0 },
+                    { label: 'قيد المراجعة', count: pendingServicesCount, percent: myServicesCount > 0 ? Math.round((pendingServicesCount / myServicesCount) * 100) : 0 },
+                    { label: 'مرفوضة', count: rejectedServicesCount, percent: myServicesCount > 0 ? Math.round((rejectedServicesCount / myServicesCount) * 100) : 0 }
+                ];
+
+                statsGrid.innerHTML = `
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon"><i class="fas fa-store"></i></div>
+                        <div class="report-card-content">
+                            <h3 id="servicesCount">${myServicesCount}</h3>
+                            <p>خدماتي</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon accent"><i class="fas fa-calendar-check"></i></div>
+                        <div class="report-card-content">
+                            <h3>${incomingBookingsCount}</h3>
+                            <p>الحجوزات الواردة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon success"><i class="fas fa-tags"></i></div>
+                        <div class="report-card-content">
+                            <h3>${myOffersCount}</h3>
+                            <p>العروض التي أضيفت</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon warning"><i class="fas fa-bell"></i></div>
+                        <div class="report-card-content">
+                            <h3 id="notificationsproviderCount">${unreadNotificationsCount}</h3>
+                            <p>إشعارات جديدة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon pink"><i class="fas fa-chart-line"></i></div>
+                        <div class="report-card-content">
+                            <h3>${approvedServicesCount}</h3>
+                            <p>خدمات موافقة</p>
+                        </div>
+                    </div>
+                    <div class="modern-card report-card">
+                        <div class="report-card-icon purple"><i class="fas fa-globe"></i></div>
+                        <div class="report-card-content">
+                            <h3>${platformServicesCount}</h3>
+                            <p>إجمالي الخدمات في المنصة</p>
+                        </div>
+                    </div>
+                `;
+
+                performanceList.innerHTML = serviceStatusItems.length > 0 ? serviceStatusItems.map(item => `
+                    <div class="report-row">
+                        <div class="report-row-head">
+                            <span>${item.label}</span>
+                            <strong>${item.count} خدمة</strong>
+                        </div>
+                        <div class="report-progress">
+                            <span style="width:${item.percent}%"></span>
+                        </div>
+                        <small>${item.percent}% من خدماتك</small>
+                    </div>
+                `).join('') : '<div class="empty-state"><i class="fas fa-chart-bar"></i><p>لا توجد بيانات كافية بعد</p></div>';
+
+                const activityItems = [
+                    ...Array.isArray(providerServices) ? providerServices.slice(0, 4).map(item => ({
+                        title: getServiceDisplayTitle(item),
+                        subtitle: `الخدمة • ${item.status === 'approved' ? 'تمت الموافقة' : item.status === 'pending' ? 'قيد المراجعة' : 'مرفوضة'}`,
+                        time: item.created_at
+                    })) : [],
+                    ...Array.isArray(providerOffers) ? providerOffers.slice(0, 4).map(item => ({
+                        title: item.title || 'عرض جديد',
+                        subtitle: `العرض • ${item.status === 'active' ? 'نشط' : item.status === 'pending' ? 'قيد المراجعة' : 'مرفوض'}`,
+                        time: item.created_at
+                    })) : [],
+                    ...providerBookings.slice(0, 4).map(item => ({
+                        title: 'حجز جديد',
+                        subtitle: `الحجز • ${item.id}`,
+                        time: item.created_at
+                    }))
+                ]
+                    .sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0))
+                    .slice(0, 8);
+
+                activityList.innerHTML = activityItems.length > 0 ? activityItems.map(item => `
+                    <div class="activity-item">
+                        <div class="activity-badge"><i class="fas fa-bolt"></i></div>
+                        <div class="activity-content">
+                            <h4>${item.title}</h4>
+                            <p>${item.subtitle}</p>
+                        </div>
+                        <span class="activity-time">${new Date(item.time || Date.now()).toLocaleDateString('ar-SA')}</span>
+                    </div>
+                `).join('') : '<div class="empty-state"><i class="fas fa-history"></i><p>لا توجد أنشطة حديثة بعد</p></div>';
+            } catch (error) {
+                console.error('Error loading provider reports:', error);
+                statsGrid.innerHTML = '<div class="modern-card report-loading-card">تعذر تحميل التقارير مؤقتاً. يرجى المحاولة لاحقًا.</div>';
+                performanceList.innerHTML = '<div class="empty-state">تعذر تحميل البيانات</div>';
+                activityList.innerHTML = '<div class="empty-state">تعذر تحميل الأنشطة</div>';
+            }
+        }
+
+        let selectedServiceImageFile = null;
+        let editingServiceImageUrl = '';
+        let isSavingService = false;
+
+        function setServiceSubmitButtonState(form, isSubmitting) {
+            const saveButton = form?.querySelector('button[type="submit"]');
+            if (!saveButton) return;
+            saveButton.disabled = isSubmitting;
+            saveButton.innerHTML = isSubmitting
+                ? '<i class="fas fa-spinner fa-spin"></i> جارِ الحفظ...'
+                : '<i class="fas fa-plus-circle"></i> حفظ الخدمة';
+        }
+
+        async function ensureValidProviderUser(currentUser) {
+            const supabase = getSupabase();
+            if (!supabase || !currentUser) return currentUser;
+
+            const candidateId = currentUser?.id ? String(currentUser.id).trim() : '';
+            if (candidateId) {
+                try {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('id', candidateId)
+                        .maybeSingle();
+
+                    if (!error && data) {
+                        return data;
+                    }
+                } catch (lookupError) {
+                    console.warn('Unable to resolve provider via id:', lookupError);
+                }
+            }
+
+            if (currentUser?.email) {
+                try {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('email', currentUser.email)
+                        .limit(1);
+
+                    if (!error && Array.isArray(data) && data.length > 0) {
+                        return data[0];
+                    }
+                } catch (lookupError) {
+                    console.warn('Unable to resolve provider via email:', lookupError);
+                }
+            }
+
+            const fallbackPayload = {
+                email: currentUser?.email || `${Date.now()}@provider.local`,
+                password: currentUser?.password || 'temp123456',
+                full_name: currentUser?.full_name || currentUser?.name || 'مقدم خدمة',
+                phone: currentUser?.phone || '0000000000',
+                country_code: currentUser?.country_code || '+966',
+                city: currentUser?.city || '',
+                address: currentUser?.address || '',
+                role: currentUser?.role || 'provider'
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert([fallbackPayload])
+                    .select();
+
+                if (error) throw error;
+                const createdUser = Array.isArray(data) && data.length > 0 ? data[0] : null;
+                if (createdUser) {
+                    localStorage.setItem('currentUser', JSON.stringify(createdUser));
+                    return createdUser;
+                }
+            } catch (createError) {
+                console.warn('Unable to create provider user record:', createError);
+            }
+
+            return currentUser;
+        }
+
+        function buildServiceFingerprint(servicePayload) {
+            const providerId = servicePayload?.provider_id || '';
+            const title = String(servicePayload?.title || '').trim().toLowerCase();
+            const description = String(servicePayload?.description || '').trim().toLowerCase();
+            const location = String(servicePayload?.location || '').trim().toLowerCase();
+            const price = String(servicePayload?.price || '');
+            const duration = String(servicePayload?.duration || '').trim().toLowerCase();
+            const workingDays = String(servicePayload?.working_days || '').trim().toLowerCase();
+            const workingHours = String(servicePayload?.working_hours || '').trim().toLowerCase();
+            const serviceType = String(servicePayload?.service_type || '').trim().toLowerCase();
+            return `${providerId}|${serviceType}|${title}|${description}|${location}|${price}|${duration}|${workingDays}|${workingHours}`;
+        }
+
+        async function findRecentDuplicateService(servicePayload) {
+            const supabase = getSupabase();
+            if (!supabase || !servicePayload?.provider_id) return null;
+
+            const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+            const { data, error } = await supabase
+                .from('services')
+                .select('id, title, description, location, price, duration, working_days, working_hours, service_type, image_url')
+                .eq('provider_id', servicePayload.provider_id)
+                .eq('title', servicePayload.title || '')
+                .eq('service_type', servicePayload.service_type)
+                .eq('description', servicePayload.description)
+                .eq('location', servicePayload.location)
+                .eq('price', servicePayload.price)
+                .eq('duration', servicePayload.duration)
+                .eq('working_days', servicePayload.working_days)
+                .eq('working_hours', servicePayload.working_hours)
+                .eq('status', 'pending')
+                .gte('created_at', since)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error) {
+                console.warn('Unable to check for duplicate service:', error);
+                return null;
+            }
+
+            return Array.isArray(data) && data.length > 0 ? data[0] : null;
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function saveServiceImage(file) {
+            if (!file) return '';
+            try {
+                return await readFileAsDataURL(file);
+            } catch (error) {
+                console.warn('Failed to convert image to data URL:', error);
+                return '';
+            }
+        }
+
+        function handleServiceImageSelection(file) {
+            if (!file) return;
+            selectedServiceImageFile = file;
+            const preview = document.getElementById('serviceImagePreview');
+            const previewContainer = document.getElementById('serviceImagePreviewContainer');
+            const dropzone = document.getElementById('serviceImageDropzone');
+            if (preview && previewContainer) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    preview.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+            if (dropzone) {
+                dropzone.innerHTML = `<i class="fas fa-image" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i><p style="margin: 0 0 0.3rem; color: var(--text-primary);">${escapeAttribute(file.name || 'تم اختيار الصورة')}</p><small style="color: var(--text-secondary);">تم اختيار الصورة بنجاح</small>`;
+            }
+            bindServiceImageControls();
+        }
+
+        function bindServiceImageControls() {
+            const input = document.getElementById('serviceImageInput');
+            const dropzone = document.getElementById('serviceImageDropzone');
+            if (!input || !dropzone) return;
+
+            if (!input.dataset.bound) {
+                input.addEventListener('change', function (event) {
+                    const file = event.target.files && event.target.files[0];
+                    if (file) handleServiceImageSelection(file);
+                });
+                input.dataset.bound = 'true';
+            }
+
+            if (!dropzone.dataset.bound) {
+                dropzone.addEventListener('click', function () {
+                    input.click();
+                });
+                dropzone.addEventListener('dragover', function (event) {
+                    event.preventDefault();
+                    dropzone.style.borderColor = 'var(--primary)';
+                    dropzone.style.background = '#eef2ff';
+                });
+                dropzone.addEventListener('dragleave', function () {
+                    dropzone.style.borderColor = '#cbd5e1';
+                    dropzone.style.background = '#f8fafc';
+                });
+                dropzone.addEventListener('drop', function (event) {
+                    event.preventDefault();
+                    const file = event.dataTransfer?.files?.[0];
+                    if (file) handleServiceImageSelection(file);
+                    dropzone.style.borderColor = '#cbd5e1';
+                    dropzone.style.background = '#f8fafc';
+                });
+                dropzone.dataset.bound = 'true';
+            }
+        }
+
+        function clearServiceImageSelection() {
+            selectedServiceImageFile = null;
+            const preview = document.getElementById('serviceImagePreview');
+            const previewContainer = document.getElementById('serviceImagePreviewContainer');
+            const dropzone = document.getElementById('serviceImageDropzone');
+            const input = document.getElementById('serviceImageInput');
+            if (preview) preview.src = '';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (dropzone) {
+                dropzone.innerHTML = '<input type="file" id="serviceImageInput" accept="image/*" style="display:none;">\n<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>\n<p style="margin: 0 0 0.3rem; color: var(--text-primary);">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>\n<small style="color: var(--text-secondary);">يدعم JPG, PNG, WEBP</small>';
+            }
+            if (input) input.value = '';
+            bindServiceImageControls();
+        }
+
+        // Load user data on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            currentProviderUser = currentUser;
+            
+            if (currentUser) {
+                // Update user info in sidebar
+                const userNameElement = document.getElementById('userName');
+                const userRoleElement = document.getElementById('userRole');
+                
+                if (userNameElement) {
+                    userNameElement.textContent = currentUser.full_name;
+                }
+                
+                if (userRoleElement) {
+                    userRoleElement.textContent = currentUser.role === 'customer' ? 'عميل المنصة' : 'مقدم خدمة';
+                }
+
+                // Update profile section if exists
+                const nameElement = document.getElementById('name');
+                const emailElement = document.getElementById('email');
+                const phoneElement = document.getElementById('phone');
+                
+                if (nameElement) nameElement.textContent = currentUser.full_name;
+                if (emailElement) emailElement.textContent = currentUser.email;
+                if (phoneElement) phoneElement.textContent = currentUser.country_code + currentUser.phone;
+
+                bindServiceImageControls();
+
+                const serviceForm = document.getElementById('serviceForm');
+                if (serviceForm && !serviceForm.__providerSaveBound) {
+                    serviceForm.__providerSaveBound = true;
+                    serviceForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        if (isSavingService) return;
+                        isSavingService = true;
+                        setServiceSubmitButtonState(serviceForm, true);
+
+                        const editingServiceId = window.editingServiceId || serviceForm.dataset.editingServiceId;
+                        const rawType = document.getElementById('serviceType')?.value || '';
+                        const mapType = (val) => {
+                            if (!val) return '';
+                            const s = String(val).trim().toLowerCase();
+                            if (['hotel','gym','salon','restaurant'].includes(s)) return s;
+                            if (['فندق','فنادق'].includes(s)) return 'hotel';
+                            if (['نادي','صالات'].includes(s)) return 'gym';
+                            if (['صالون','صالونات','صالون رجال','صالون نساء'].includes(s)) return 'salon';
+                            if (['مطعم','مطاعم'].includes(s)) return 'restaurant';
+                            if (s.includes('hotel')) return 'hotel';
+                            if (s.includes('gym')) return 'gym';
+                            if (s.includes('salon')) return 'salon';
+                            if (s.includes('restaur') || s.includes('مطعم')) return 'restaurant';
+                            return '';
+                        };
+
+                        const normalizedType = mapType(rawType);
+                        const serviceTitle = document.getElementById('serviceTitle')?.value?.trim() || '';
+
+                        if (!serviceTitle || !normalizedType || !document.getElementById('serviceDescription').value.trim() || !document.getElementById('serviceLocation').value.trim() || !document.getElementById('serviceDuration').value.trim() || !document.getElementById('workingDays').value || !document.getElementById('workingTime').value) {
+                            showServiceMessage('يرجى تعبئة جميع الحقول المطلوبة واختيار فئة خدمة صالحة.', 'error');
+                            isSavingService = false;
+                            setServiceSubmitButtonState(serviceForm, false);
+                            return;
+                        }
+
+                        try {
+                            const activeProviderUser = await ensureValidProviderUser(currentUser);
+                            if (!activeProviderUser?.id) {
+                                throw new Error('Unable to resolve provider user');
+                            }
+
+                            const imageUrl = selectedServiceImageFile ? await saveServiceImage(selectedServiceImageFile) : editingServiceImageUrl;
+                            const serviceData = {
+                                provider_id: activeProviderUser.id,
+                                title: serviceTitle,
+                                service_type: normalizedType,
+                                description: document.getElementById('serviceDescription').value.trim(),
+                                location: document.getElementById('serviceLocation').value.trim(),
+                                price: Number(document.getElementById('servicePrice').value),
+                                duration: document.getElementById('serviceDuration').value.trim(),
+                                working_days: document.getElementById('workingDays').value,
+                                working_hours: document.getElementById('workingTime').value,
+                                status: 'pending'
+                            };
+                            let savedService = null;
+                            const payload = { ...serviceData, image_url: imageUrl || '' };
+                            const fingerprint = buildServiceFingerprint(payload);
+                            const recentFingerprint = sessionStorage.getItem('recentServiceFingerprint');
+                            const recentFingerprintTime = Number(sessionStorage.getItem('recentServiceFingerprintTime') || '0');
+
+                            if (recentFingerprint === fingerprint && Date.now() - recentFingerprintTime < 30000) {
+                                resetServiceForm();
+                                await refreshProviderServices();
+                                await loadProviderNotifications();
+                                showServiceMessage('تم حفظ هذه الخدمة سابقًا ولا يتم إضافة نسخة جديدة.', 'success');
+                                return;
+                            }
+
+                            if (editingServiceId) {
+                                savedService = await ServicesDB.update(editingServiceId, { ...payload, status: window.editingServiceStatus });
+                            } else {
+                                const duplicate = await findRecentDuplicateService(payload);
+                                if (duplicate) {
+                                    resetServiceForm();
+                                    await refreshProviderServices();
+                                    await loadProviderNotifications();
+                                    showServiceMessage('تم حفظ هذه الخدمة سابقًا ولا يتم إضافة نسخة جديدة.', 'success');
+                                    return;
+                                }
+                                savedService = await ServicesDB.add(payload);
+                            }
+                            sessionStorage.setItem('recentServiceFingerprint', fingerprint);
+                            sessionStorage.setItem('recentServiceFingerprintTime', String(Date.now()));
+                            resetServiceForm();
+                            await refreshProviderServices();
+                            await loadProviderNotifications();
+                        } catch (error) {
+                            console.error('Error saving service:', error);
+                            showServiceMessage('تعذر حفظ الخدمة. يرجى المحاولة لاحقًا.', 'error');
+                        } finally {
+                            isSavingService = false;
+                            setServiceSubmitButtonState(serviceForm, false);
+                        }
+                    });
+                }
+
+                // Load provider reports
+                try {
+                    await loadProviderReports();
+                } catch (error) {
+                    console.error('Error loading provider reports:', error);
+                }
+
+                // Load services from Supabase
+                try {
+                    await refreshProviderServices();
+                } catch (error) {
+                    console.error('Error loading services:', error);
+                }
+
+                // Load provider notifications from Supabase
+                try {
+                    await loadProviderNotifications();
+                } catch (error) {
+                    console.error('Error loading provider notifications:', error);
+                }
+
+                // Load offers from Supabase
+                try {
+                    const offers = await OffersDB.getByProvider(currentUser.id);
+                    window.loadOffersFromDB(offers);
+                    window.loadOffersTable(offers);
+                } catch (error) {
+                    console.error('Error loading offers:', error);
+                }
+
+                // Load sent notifications from Supabase
+                try {
+                    const sentNotifications = await SentNotificationsDB.getByProvider(currentUser.id);
+                    loadSentNotificationsFromDB(sentNotifications);
+                } catch (error) {
+                    console.error('Error loading sent notifications:', error);
+                }
+                // Update profile counters (services count, unread notifications)
+                try {
+                    await updateProviderStats();
+                } catch (e) {
+                    console.warn('updateProviderStats failed on init', e);
+                }
+                // Prefill settings form with user data
+                try {
+                    await prefillSettings();
+                } catch (e) {
+                    console.warn('prefillSettings failed on init', e);
+                }
+            } else {
+                // Redirect to login if not logged in
+                window.location.href = 'login.html';
+            }
+        });
+
+        let currentProviderUser = null;
+        window.editingServiceId = null;
+        window.editingServiceStatus = 'pending';
+        let originalSettings = null; // store original settings to detect changes
+
+        function openServiceForm() {
+            const container = document.getElementById('serviceFormContainer');
+            const button = document.getElementById('toggleServiceFormBtn');
+            if (!container || !button) return;
+            container.style.display = 'block';
+            button.innerHTML = '<i class="fas fa-minus-circle"></i> إخفاء النموذج';
+        }
+
+        function closeServiceForm() {
+            const container = document.getElementById('serviceFormContainer');
+            const button = document.getElementById('toggleServiceFormBtn');
+            if (!container || !button) return;
+            container.style.display = 'none';
+            button.innerHTML = '<i class="fas fa-plus-circle"></i> إضافة خدمة';
+        }
+
+        function toggleServiceForm() {
+            const container = document.getElementById('serviceFormContainer');
+            if (!container) return;
+            if (container.style.display === 'block') {
+                closeServiceForm();
+            } else {
+                openServiceForm();
+            }
+        }
+
+        function escapeAttribute(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function getServiceDisplayTitle(service) {
+            const directTitle = service && (service.title || service.service_title || service.name || service.serviceName);
+            if (typeof directTitle === 'string' && directTitle.trim()) {
+                return directTitle.trim();
+            }
+            const serviceType = service && (service.service_type || service.type || '');
+            return typeof serviceType === 'string' && serviceType.trim() ? serviceType.trim() : 'خدمة';
+        }
+
+        function resetServiceForm() {
+            const form = document.getElementById('serviceForm');
+            const message = document.getElementById('serviceFormMessage');
+            const preview = document.getElementById('serviceImagePreview');
+            const previewContainer = document.getElementById('serviceImagePreviewContainer');
+            const dropzone = document.getElementById('serviceImageDropzone');
+            const input = document.getElementById('serviceImageInput');
+            window.editingServiceId = null;
+            window.editingServiceStatus = 'pending';
+            editingServiceImageUrl = '';
+            selectedServiceImageFile = null;
+            if (form) {
+                form.dataset.editingServiceId = '';
+                form.reset();
+            }
+            isSavingService = false;
+            if (preview) preview.src = '';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (dropzone) {
+                dropzone.innerHTML = '<input type="file" id="serviceImageInput" accept="image/*" style="display:none;">\n<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>\n<p style="margin: 0 0 0.3rem; color: var(--text-primary);">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>\n<small style="color: var(--text-secondary);">يدعم JPG, PNG, WEBP</small>';
+            }
+            if (input) input.value = '';
+            if (message) {
+                message.style.display = 'none';
+                message.className = 'form-message';
+            }
+            closeServiceForm();
+        }
+
+        function startEditService(serviceCard) {
+            const serviceId = serviceCard?.dataset?.serviceId;
+            if (!serviceId) return;
+
+            window.editingServiceId = serviceId;
+            window.editingServiceStatus = serviceCard?.dataset?.status || 'pending';
+            editingServiceImageUrl = serviceCard?.dataset?.imageUrl || '';
+            const serviceForm = document.getElementById('serviceForm');
+            if (serviceForm) {
+                serviceForm.dataset.editingServiceId = serviceId;
+            }
+
+            document.getElementById('serviceTitle').value = serviceCard?.dataset?.title || '';
+            document.getElementById('serviceType').value = serviceCard?.dataset?.serviceType || '';
+            document.getElementById('serviceDescription').value = serviceCard?.dataset?.description || '';
+            document.getElementById('serviceLocation').value = serviceCard?.dataset?.location || '';
+            document.getElementById('servicePrice').value = serviceCard?.dataset?.price || '';
+            document.getElementById('serviceDuration').value = serviceCard?.dataset?.duration || '';
+            document.getElementById('workingDays').value = serviceCard?.dataset?.workingDays || '';
+            document.getElementById('workingTime').value = serviceCard?.dataset?.workingHours || '';
+            const preview = document.getElementById('serviceImagePreview');
+            const previewContainer = document.getElementById('serviceImagePreviewContainer');
+            if (preview && previewContainer && editingServiceImageUrl) {
+                preview.src = editingServiceImageUrl;
+                previewContainer.style.display = 'block';
+            } else if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            openServiceForm();
+        }
+
+        async function deleteService(serviceId) {
+            if (!serviceId) return;
+            const confirmed = confirm('هل أنت متأكد من حذف هذه الخدمة؟');
+            if (!confirmed) return;
+
+            try {
+                await ServicesDB.delete(serviceId);
+                showServiceMessage('تم حذف الخدمة بنجاح.', 'success');
+                await refreshProviderServices();
+            } catch (error) {
+                console.error('Error deleting service:', error);
+                showServiceMessage('تعذر حذف الخدمة. يرجى المحاولة لاحقًا.', 'error');
+            }
+        }
+
+        function showServiceMessage(message, type = 'success') {
+            const messageBox = document.getElementById('serviceFormMessage');
+            if (!messageBox) return;
+            messageBox.textContent = message;
+            messageBox.className = `form-message ${type}`;
+            messageBox.style.display = 'block';
+        }
+
+        async function getAdminUserRecord() {
+            const supabase = getSupabase();
+            const { data: adminUsers, error: adminError } = await supabase
+                .from('users')
+                .select('id, full_name, email')
+                .eq('role', 'admin')
+                .limit(1);
+
+            if (!adminError && Array.isArray(adminUsers) && adminUsers.length > 0) {
+                return adminUsers[0];
+            }
+
+            return null;
+        }
+
+        async function createServiceApprovalNotifications(providerUser, serviceRecord) {
+            const adminUser = await getAdminUserRecord();
+            const providerName = providerUser?.full_name || providerUser?.email || 'مقدم خدمة';
+            const serviceTitle = getServiceDisplayTitle(serviceRecord);
+            const payloads = [];
+
+            if (providerUser?.id) {
+                payloads.push({
+                    user_id: providerUser.id,
+                    type: 'service',
+                    title: 'تم إرسال الخدمة للمراجعة',
+                    message: `تم إرسال خدمة "${serviceTitle}" للمراجعة من الإدارة.`,
+                    status: 'unread'
+                });
+            }
+
+            if (adminUser?.id) {
+                payloads.push({
+                    user_id: adminUser.id,
+                    type: 'service',
+                    title: 'طلب خدمة جديد',
+                    message: `مقدم الخدمة ${providerName} قدم خدمة جديدة: ${serviceTitle}. يرجى مراجعتها والرد عليها.`,
+                    status: 'unread'
+                });
+            }
+
+            for (const payload of payloads) {
+                try {
+                    await NotificationsDB.add(payload);
+                } catch (notificationError) {
+                    console.warn('Notification insert skipped:', notificationError?.message || notificationError);
+                }
+            }
+        }
+
+        let currentProviderNotificationFilter = 'all';
+
+        async function loadProviderNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            if (!container) return;
+
+            const provider = currentProviderUser || JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!provider || !provider.id) {
+                container.innerHTML = '<div class="empty-state">يرجى تسجيل الدخول أولاً.</div>';
+                return;
+            }
+
+            const notifications = await NotificationsDB.getByUser(provider.id);
+            const filtered = currentProviderNotificationFilter === 'all'
+                ? notifications
+                : notifications.filter(item => item.status === currentProviderNotificationFilter);
+
+            if (!Array.isArray(filtered) || filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>لا توجد إشعارات حالياً</p></div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(notification => `
+                <div class="notification-card ${notification.status === 'unread' ? 'unread' : ''}" data-notification-id="${notification.id}">
+                    <div class="notification-header">
+                        <div class="notification-icon service">
+                            <i class="fas fa-concierge-bell"></i>
+                        </div>
+                        <div class="notification-info">
+                            <h4 class="notification-title">${notification.title || 'إشعار'}</h4>
+                            <span class="notification-time">${new Date(notification.created_at || Date.now()).toLocaleString('ar-SA')}</span>
+                        </div>
+                    </div>
+                    <p class="notification-message">${notification.message || ''}</p>
+                    <div class="notification-actions" style="display:flex; gap:0.5rem; margin-top:0.75rem; justify-content:flex-end; flex-wrap:wrap;">
+                        ${notification.status === 'unread' ? `<button type="button" class="notification-btn approve" onclick="markProviderNotificationAsRead('${notification.id}')"><i class="fas fa-check"></i> مقروءة</button>` : ''}
+                        <button type="button" class="notification-btn reject" onclick="deleteProviderNotification('${notification.id}')"><i class="fas fa-trash"></i> حذف</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // After rendering notifications, refresh both the list and the stats cards.
+            try {
+                await loadProviderReports();
+                await updateProviderStats();
+            } catch (e) {
+                console.warn('provider stats refresh failed after rendering notifications', e);
+            }
+        }
+
+        async function markProviderNotificationAsRead(notificationId) {
+            if (!notificationId) return;
+            try {
+                await NotificationsDB.markAsRead(notificationId);
+                showAnimatedAlert('تمت قراءة الإشعار بنجاح', 'success');
+                await loadProviderNotifications();
+                await loadProviderReports();
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+                showAnimatedAlert('تعذر تحديث حالة الإشعار', 'error');
+            }
+        }
+
+        async function deleteProviderNotification(notificationId) {
+            if (!notificationId) return;
+            const confirmed = confirm('هل تريد حذف هذا الإشعار؟');
+            if (!confirmed) return;
+
+            try {
+                const supabase = getSupabase();
+                const { error } = await supabase
+                    .from('notifications')
+                    .delete()
+                    .eq('id', notificationId);
+
+                if (error) throw error;
+                showAnimatedAlert('تم حذف الإشعار بنجاح', 'success');
+                await loadProviderNotifications();
+                await loadProviderReports();
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+                showAnimatedAlert('تعذر حذف الإشعار', 'error');
+            }
+        }
+
+        function filterNotifications(filter = 'all') {
+            currentProviderNotificationFilter = filter;
+            const buttons = document.querySelectorAll('.notification-filter-btn');
+            buttons.forEach(btn => {
+                const isFilterButton = btn.getAttribute('data-filter');
+                btn.classList.toggle('active', isFilterButton === filter);
+            });
+            loadProviderNotifications();
+        }
+
+        async function markAllProviderNotificationsAsRead() {
+            const provider = currentProviderUser || JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!provider || !provider.id) {
+                showAnimatedAlert('يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            try {
+                const supabase = getSupabase();
+                const { data: unreadNotifications, error: fetchError } = await supabase
+                    .from('notifications')
+                    .select('id')
+                    .eq('user_id', provider.id)
+                    .eq('status', 'unread');
+
+                if (fetchError) throw fetchError;
+
+                if (!Array.isArray(unreadNotifications) || unreadNotifications.length === 0) {
+                    showAnimatedAlert('لا توجد إشعارات غير مقروءة', 'success');
+                    return;
+                }
+
+                const notificationIds = unreadNotifications.map(item => item.id);
+                const { error: updateError } = await supabase
+                    .from('notifications')
+                    .update({ status: 'read' })
+                    .in('id', notificationIds);
+
+                if (updateError) throw updateError;
+
+                currentProviderNotificationFilter = 'all';
+                const buttons = document.querySelectorAll('.notification-filter-btn');
+                buttons.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-filter') === 'all'));
+
+                showAnimatedAlert('تم تعيين جميع الإشعارات كمقروءة', 'success');
+                await loadProviderNotifications();
+                await loadProviderReports();
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+                showAnimatedAlert('تعذر تحديث جميع الإشعارات', 'error');
+            }
+        }
+
+        // Update the small counters in the profile (services count, unread notifications)
+        async function updateProviderStats() {
+            try {
+                const provider = currentProviderUser || JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!provider || !provider.id) return;
+
+                // Services count
+                try {
+                    const services = await ServicesDB.getByProvider(provider.id);
+                    const servicesCountEl = document.getElementById('servicesCount');
+                    if (servicesCountEl) servicesCountEl.textContent = Array.isArray(services) ? services.length : 0;
+                } catch (err) {
+                    console.warn('Failed to fetch services for count', err);
+                }
+
+                // Unread notifications count
+                try {
+                    const notifications = await NotificationsDB.getByUser(provider.id);
+                    const unread = Array.isArray(notifications) ? notifications.filter(n => n.status === 'unread' || n.status === 'pending').length : 0;
+                    const notifCountEl = document.getElementById('notificationsproviderCount');
+                    if (notifCountEl) notifCountEl.textContent = unread;
+                } catch (err) {
+                    console.warn('Failed to fetch notifications for count', err);
+                }
+            } catch (e) {
+                console.error('Error in updateProviderStats', e);
+            }
+        }
+
+        // Prefill settings form from database for current logged-in user
+        async function prefillSettings() {
+            try {
+                const user = currentProviderUser || JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!user || !user.id) return;
+
+                // Try to fetch latest record
+                let record = null;
+                try {
+                    record = await UsersDB.getById(user.id);
+                } catch (err) {
+                    console.warn('UsersDB.getById failed, falling back to local user', err);
+                }
+
+                if (!record) record = user;
+                originalSettings = record;
+
+                const fullNameEl = document.getElementById('fullName');
+                const phoneEl = document.getElementById('phoneNumber');
+                const emailEl = document.getElementById('email');
+                const cityEl = document.getElementById('city');
+                const addressEl = document.getElementById('address');
+
+                if (fullNameEl) fullNameEl.value = record.full_name || '';
+                if (phoneEl) phoneEl.value = record.phone || (record.country_code ? (record.country_code + (record.phone || '')) : '');
+                if (emailEl) emailEl.value = record.email || '';
+                if (cityEl) cityEl.value = record.city || '';
+                if (addressEl) addressEl.value = record.address || '';
+
+                // Attach submit handler for settings form (if not attached already)
+                const settingsForm = document.getElementById('settingsForm');
+                if (settingsForm && !settingsForm.__hasSettingsHandler) {
+                    // disable native browser validation UI so our JS can handle partial updates
+                    try { settingsForm.noValidate = true; } catch (e) { /* ignore */ }
+                    settingsForm.__hasSettingsHandler = true;
+                    settingsForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        if (!originalSettings || !originalSettings.id) {
+                            showAnimatedAlert('تعذر الحصول على بيانات المستخدم', 'error');
+                            return;
+                        }
+
+                        function clearFieldError(el, errEl) {
+                            if (el) el.style.border = '2px solid #e5e7eb';
+                            if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+                        }
+
+                        function setFieldError(el, errEl, message) {
+                            if (el) el.style.border = '2px solid #ef4444';
+                            if (errEl) { errEl.style.display = 'block'; errEl.textContent = message; }
+                        }
+
+                        const fieldMap = [
+                            { id: 'fullName', prop: 'full_name', err: 'fullNameError' },
+                            { id: 'phoneNumber', prop: 'phone', err: 'phoneNumberError' },
+                            { id: 'email', prop: 'email', err: 'emailError' },
+                            { id: 'city', prop: 'city', err: 'cityError' },
+                            { id: 'address', prop: 'address', err: 'addressError' }
+                        ];
+
+                        const payload = {};
+                        let firstInvalid = null;
+
+                        for (const f of fieldMap) {
+                            const el = document.getElementById(f.id);
+                            const errEl = document.getElementById(f.err);
+                            const newVal = (el && el.value) ? el.value.trim() : '';
+
+                            let origVal = originalSettings[f.prop] || '';
+                            if (f.prop === 'phone' && originalSettings.country_code) {
+                                origVal = (originalSettings.country_code || '') + (originalSettings.phone || originalSettings.phone_number || '');
+                            }
+                            origVal = String(origVal || '');
+
+                            if (newVal === origVal) {
+                                clearFieldError(el, errEl);
+                                continue;
+                            }
+
+                            if (f.prop === 'phone') {
+                                const digits = newVal.replace(/\D/g, '');
+                                if (digits.length === 0) {
+                                    setFieldError(el, errEl, 'رقم الهاتف مطلوب');
+                                    if (!firstInvalid) firstInvalid = el;
+                                    continue;
+                                }
+                                if (!/^05\d{8}$/.test(digits)) {
+                                    setFieldError(el, errEl, 'رقم الهاتف يجب أن يبدأ بـ05 ويحتوي على 10 أرقام');
+                                    if (!firstInvalid) firstInvalid = el;
+                                    continue;
+                                }
+                                payload[f.prop] = digits;
+                                clearFieldError(el, errEl);
+                                continue;
+                            }
+
+                            if (f.prop === 'email') {
+                                if (newVal.length === 0) {
+                                    setFieldError(el, errEl, 'البريد الإلكتروني مطلوب');
+                                    if (!firstInvalid) firstInvalid = el;
+                                    continue;
+                                }
+                                const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                if (!emailRe.test(newVal)) {
+                                    setFieldError(el, errEl, 'البريد الإلكتروني غير صالح');
+                                    if (!firstInvalid) firstInvalid = el;
+                                    continue;
+                                }
+                                payload[f.prop] = newVal;
+                                clearFieldError(el, errEl);
+                                continue;
+                            }
+
+                            if ((f.prop === 'city' || f.prop === 'address') && newVal.length === 0) {
+                                setFieldError(el, errEl, `${f.prop === 'city' ? 'المدينة' : 'العنوان'} مطلوبة`);
+                                if (!firstInvalid) firstInvalid = el;
+                                continue;
+                            }
+
+                            payload[f.prop] = newVal;
+                            clearFieldError(el, errEl);
+                        }
+
+                        const newPassword = (document.getElementById('newPassword') || {}).value || '';
+                        const confirmPassword = (document.getElementById('confirmPassword') || {}).value || '';
+                        const newPasswordEl = document.getElementById('newPassword');
+                        const confirmPasswordEl = document.getElementById('confirmPassword');
+                        const newPasswordErr = document.getElementById('newPasswordError');
+                        const confirmPasswordErr = document.getElementById('confirmPasswordError');
+
+                        if (newPassword || confirmPassword) {
+                            if (newPassword.length < 8) {
+                                setFieldError(newPasswordEl, newPasswordErr, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+                                if (!firstInvalid) firstInvalid = newPasswordEl;
+                            } else if (newPassword !== confirmPassword) {
+                                setFieldError(confirmPasswordEl, confirmPasswordErr, 'كلمتا المرور غير متطابقتين');
+                                if (!firstInvalid) firstInvalid = confirmPasswordEl;
+                            } else {
+                                payload.password = newPassword;
+                                clearFieldError(newPasswordEl, newPasswordErr);
+                                clearFieldError(confirmPasswordEl, confirmPasswordErr);
+                            }
+                        } else {
+                            clearFieldError(newPasswordEl, newPasswordErr);
+                            clearFieldError(confirmPasswordEl, confirmPasswordErr);
+                        }
+
+                        if (firstInvalid) {
+                            firstInvalid.focus();
+                            showAnimatedAlert('هناك أخطاء في بعض الحقول. صححها ثم حاول مرة أخرى.', 'error');
+                            return;
+                        }
+
+                        if (Object.keys(payload).length === 0) {
+                            showAnimatedAlert('لم يتم تغيير أي حقل', 'error');
+                            return;
+                        }
+
+                        try {
+                            const supabase = getSupabase();
+                            const { data, error } = await supabase
+                                .from('users')
+                                .update(payload)
+                                .eq('id', originalSettings.id)
+                                .select()
+                                .single();
+
+                            if (error) throw error;
+
+                            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null') || {};
+                            const updatedUser = Object.assign({}, currentUser, data || {});
+                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                            currentProviderUser = updatedUser;
+                            originalSettings = Object.assign({}, originalSettings, data || {});
+
+                            const userNameElement = document.getElementById('userName');
+                            const nameElement = document.getElementById('name');
+                            const emailElement = document.getElementById('email');
+                            const phoneElement = document.getElementById('phone');
+                            if (userNameElement && updatedUser.full_name) userNameElement.textContent = updatedUser.full_name;
+                            if (nameElement && updatedUser.full_name) nameElement.textContent = updatedUser.full_name;
+                            if (emailElement && updatedUser.email) emailElement.textContent = updatedUser.email;
+                            if (phoneElement) phoneElement.textContent = (updatedUser.country_code || '') + (updatedUser.phone || updatedUser.phone_number || '');
+
+                            const newPassEl = document.getElementById('newPassword');
+                            const confirmPassEl = document.getElementById('confirmPassword');
+                            if (newPassEl) newPassEl.value = '';
+                            if (confirmPassEl) confirmPassEl.value = '';
+
+                            showAnimatedAlert('تم حفظ التغييرات بنجاح', 'success');
+                            await updateProviderStats();
+
+                            setTimeout(() => { location.reload(); }, 700);
+                        } catch (err) {
+                            console.error('Error updating user settings:', err);
+                            const msg = err?.message || '';
+                            if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+                                showAnimatedAlert('تعذر الاتصال بخادم البيانات. تحقق من اتصالك وسمح أصول (CORS) في إعدادات Supabase.', 'error');
+                            } else {
+                                showAnimatedAlert('تعذر حفظ التغييرات', 'error');
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('prefillSettings error', e);
+            }
+        }
+
+        function showAnimatedAlert(message, type = 'success') {
+            const existingAlert = document.querySelector('.animated-alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+
+            const alert = document.createElement('div');
+            alert.className = `animated-alert ${type}`;
+            alert.innerHTML = `
+                <div class="alert-icon">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                </div>
+                <div class="alert-message">${message}</div>
+                <button class="alert-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            document.body.appendChild(alert);
+            setTimeout(() => {
+                if (alert && alert.parentElement) {
+                    alert.classList.add('fade-out');
+                    setTimeout(() => alert.remove(), 300);
+                }
+            }, 2200);
+        }
+
+        async function refreshProviderServices() {
+            const servicesList = document.getElementById('servicesList');
+            if (!servicesList) return;
+
+            const provider = currentProviderUser || JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!provider || !provider.id) {
+                servicesList.innerHTML = '<div class="empty-state">يرجى تسجيل الدخول أولاً.</div>';
+                return;
+            }
+
+            servicesList.innerHTML = '<div class="empty-state">جاري تحميل خدماتك...</div>';
+
+            try {
+                const services = await ServicesDB.getByProvider(provider.id);
+                const safeServices = Array.isArray(services) ? services : [];
+                const servicesCount = document.getElementById('servicesCount');
+                if (servicesCount) {
+                    servicesCount.textContent = safeServices.length;
+                }
+
+                if (safeServices.length === 0) {
+                    servicesList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-concierge-bell"></i>
+                            <p>لا توجد خدمات حالياً</p>
+                            <span>أضف أول خدمة جديدة من الزر أعلاه.</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                servicesList.innerHTML = safeServices.map(service => {
+                    const statusClass = service.status === 'approved' ? 'status-confirmed' :
+                        service.status === 'pending' ? 'status-pending' : 'status-cancelled';
+                    const statusText = service.status === 'approved' ? 'موافق عليه' :
+                        service.status === 'pending' ? 'قيد المراجعة' : 'مرفوض';
+
+                    const serviceTitle = getServiceDisplayTitle(service);
+                    return `
+                        <div class="modern-card service-item-card" 
+                            data-service-id="${service.id}" 
+                            data-title="${escapeAttribute(service.title || '')}" 
+                            data-service-type="${escapeAttribute(service.service_type || '')}" 
+                            data-description="${escapeAttribute(service.description || '')}" 
+                            data-location="${escapeAttribute(service.location || '')}" 
+                            data-price="${escapeAttribute(service.price || '')}" 
+                            data-duration="${escapeAttribute(service.duration || '')}" 
+                            data-working-days="${escapeAttribute(service.working_days || '')}" 
+                            data-working-hours="${escapeAttribute(service.working_hours || '')}" 
+                            data-image-url="${escapeAttribute(service.image_url || '')}" 
+                            data-status="${escapeAttribute(service.status || 'pending')}">
+                            <div class="service-item-header">
+                                <h3 class="card-title" style="margin:0;">${escapeAttribute(serviceTitle)}</h3>
+                                <div class="service-item-actions">
+                                    <button type="button" class="service-action-btn edit" onclick="startEditService(this.closest('.service-item-card'))" title="تعديل الخدمة">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                    <button type="button" class="service-action-btn delete" onclick="deleteService('${service.id}')" title="حذف الخدمة">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                            ${service.image_url ? `<img src="${escapeAttribute(service.image_url)}" alt="${escapeAttribute(serviceTitle)}" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin:0.75rem 0;">` : ''}
+                            <p class="card-description">${service.description || 'لا يوجد وصف'}</p>
+                            <div class="service-item-meta">
+                                <span><i class="fas fa-map-marker-alt"></i> ${service.location || 'غير محدد'}</span>
+                                <span><i class="fas fa-money-bill-wave"></i> ${service.price || 0} ر.س</span>
+                            </div>
+                            <div class="service-item-meta">
+                                <span><i class="fas fa-clock"></i> ${service.duration || 'غير محدد'}</span>
+                                <span><i class="fas fa-calendar-alt"></i> ${service.working_days || 'غير محدد'}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading services:', error);
+                servicesList.innerHTML = '<div class="empty-state">تعذر تحميل خدماتك من قاعدة البيانات.</div>';
+            }
+        }
+
+        // Load sent notifications from database
+        function loadSentNotificationsFromDB(sentNotifications) {
+            const sentNotificationsList = document.getElementById('sentNotificationsList');
+            
+            if (!sentNotificationsList) {
+                console.warn('sentNotificationsList element not found');
+                return;
+            }
+            
+            if (sentNotifications.length === 0) {
+                sentNotificationsList.innerHTML = `
+                    <div class="modern-card" style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-paper-plane" style="font-size: 3rem; color: var(--text-secondary); opacity: 0.5; margin-bottom: 1rem;"></i>
+                        <p style="color: var(--text-secondary);">لم يتم إرسال أي إشعارات بعد</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let sentHTML = '';
+            sentNotifications.forEach(notification => {
+                const recipientIcon = notification.send_type === 'all' ? 'fa-users' : 'fa-user';
+                const recipientText = notification.send_type === 'all' ? 'جميع المستخدمين' : 'مستخدم محدد';
+                
+                sentHTML += `
+                    <div class="sent-notification-card">
+                        <div class="sent-notification-header">
+                            <div class="sent-notification-icon">
+                                <i class="fas ${recipientIcon}"></i>
+                            </div>
+                            <div class="sent-notification-info">
+                                <h4 class="sent-notification-title">${notification.title}</h4>
+                                <span class="sent-notification-recipient">
+                                    <i class="fas fa-arrow-left"></i> ${recipientText}
+                                </span>
+                            </div>
+                            <span class="sent-notification-time">${notification.sent_date} - ${notification.sent_time}</span>
+                        </div>
+                        <p class="sent-notification-message">${notification.message}</p>
+                    </div>
+                `;
+            });
+
+            sentNotificationsList.innerHTML = sentHTML;
+        }
+
+        // Offer image handling
+        let selectedOfferImageFile = null;
+        let editingOfferImageUrl = '';
+
+        function handleOfferImageSelect(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('يرجى اختيار ملف صورة صالح');
+                return;
+            }
+            selectedOfferImageFile = file;
+            const preview = document.getElementById('offerImagePreview');
+            const previewContainer = document.getElementById('offerImagePreviewContainer');
+            const dropzone = document.getElementById('offerImageDropzone');
+            if (preview && previewContainer) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    preview.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function bindOfferImageControls() {
+            const input = document.getElementById('offerImageInput');
+            const dropzone = document.getElementById('offerImageDropzone');
+            if (!input || !dropzone) return;
+
+            if (!input.dataset.bound) {
+                input.dataset.bound = 'true';
+                input.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        handleOfferImageSelect(e.target.files[0]);
+                    }
+                });
+
+                dropzone.addEventListener('click', () => input.click());
+
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.style.borderColor = 'var(--primary)';
+                    dropzone.style.background = '#f0f9ff';
+                });
+
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.style.borderColor = '#cbd5e1';
+                    dropzone.style.background = '#f8fafc';
+                });
+
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.style.borderColor = '#cbd5e1';
+                    dropzone.style.background = '#f8fafc';
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleOfferImageSelect(e.dataTransfer.files[0]);
+                    }
+                });
+            }
+        }
+
+        function clearOfferImageSelection() {
+            selectedOfferImageFile = null;
+            editingOfferImageUrl = '';
+            const preview = document.getElementById('offerImagePreview');
+            const previewContainer = document.getElementById('offerImagePreviewContainer');
+            const dropzone = document.getElementById('offerImageDropzone');
+            const input = document.getElementById('offerImageInput');
+            if (preview) preview.src = '';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (dropzone) {
+                dropzone.innerHTML = '<input type="file" id="offerImageInput" accept="image/*" style="display:none;">\n<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>\n<p style="margin: 0 0 0.3rem; color: var(--text-primary);">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>\n<small style="color: var(--text-secondary);">يدعم JPG, PNG, WEBP</small>';
+            }
+            if (input) input.value = '';
+            bindOfferImageControls();
+        }
+
+        // Handle offer form submission
+        document.getElementById('offerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const offerId = document.getElementById('offerId').value;
+            let imageUrl = editingOfferImageUrl;
+
+            // Handle image upload using base64 encoding
+            if (selectedOfferImageFile) {
+                try {
+                    const reader = new FileReader();
+                    const base64Promise = new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(selectedOfferImageFile);
+                    });
+                    imageUrl = await base64Promise;
+                } catch (error) {
+                    console.error('Error converting image:', error);
+                    alert('حدث خطأ أثناء معالجة الصورة. سيتم حفظ العرض بدون صورة.');
+                }
+            }
+
+            const offerData = {
+                title: document.getElementById('offerName').value,
+                discount_percentage: parseInt(document.getElementById('offerDiscount').value),
+                status: document.getElementById('offerStatus').value,
+                provider_id: JSON.parse(localStorage.getItem('currentUser')).id,
+                description: '',
+                start_date: new Date().toISOString().split('T')[0],
+                end_date: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
+            };
+
+            if (imageUrl) {
+                offerData.image_url = imageUrl;
+            }
+
+            try {
+                if (offerId) {
+                    // Update existing offer
+                    await OffersDB.update(offerId, offerData);
+                    alert('تم تحديث العرض بنجاح');
+                } else {
+                    // Create new offer
+                    offerData.status = 'pending';
+                    await OffersDB.add(offerData);
+                    
+                    // Notify admins
+                    try {
+                        const { data: adminUsers } = await getSupabase()
+                            .from('users')
+                            .select('id')
+                            .eq('role', 'admin');
+                        
+                        if (adminUsers && adminUsers.length > 0) {
+                            for (const admin of adminUsers) {
+                                await NotificationsDB.add({
+                                    user_id: admin.id,
+                                    type: 'system',
+                                    title: 'عرض جديد بانتظار الموافقة',
+                                    message: `تمت إضافة عرض جديد "${offerData.title}" ويحتاج إلى مراجعتك.`,
+                                    status: 'unread'
+                                });
+                            }
+                        }
+                    } catch (notifError) {
+                        console.error('Error notifying admins:', notifError);
+                    }
+                    
+                    alert('تم إضافة العرض بنجاح وبانتظار موافقة الإدارة');
+                }
+                
+                closeOfferModal();
+                clearOfferImageSelection();
+                
+                // Reload offers
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const offers = await OffersDB.getByProvider(currentUser.id);
+                window.loadOffersFromDB(offers);
+                window.loadOffersTable(offers);
+            } catch (error) {
+                console.error('Error saving offer:', error);
+                alert('حدث خطأ أثناء حفظ العرض');
+            }
+        });
+            document.addEventListener('DOMContentLoaded', loadIncomingBookings);
+        </script>
+</body>
+</html>
