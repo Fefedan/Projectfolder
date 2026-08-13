@@ -397,8 +397,8 @@
 
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             if (!currentUser) {
-                alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
-                window.location.href = 'index.html';
+                alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى صفحة تسجيل الدخول.');
+                window.location.href = 'login.html';
                 return;
             }
 
@@ -504,8 +504,8 @@
                 }
 
                 if (!currentUser || !currentUser.id) {
-                    alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
-                    window.location.href = 'index.html';
+                    alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى صفحة تسجيل الدخول.');
+                    window.location.href = 'login.html';
                     return;
                 }
 
