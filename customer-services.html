@@ -237,7 +237,7 @@
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             if (!currentUser || currentUser.role !== 'customer') {
                 alert('هذه الصفحة مخصصة لعملاء المنصة فقط. سيتم توجيهك إلى الرئيسية.');
-                window.location.href = 'home.html';
+                window.location.href = 'index.html';
                 return;
             }
             ////////////////////////////////////////////////////
