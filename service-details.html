@@ -166,7 +166,7 @@
             if (!id) {
                 console.error('Empty or missing service ID');
                 if (mainContentEl) {
-                    mainContentEl.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><h3>تعذر العثور على الخدمة</h3><p>لم يتم تحديد معرّف الخدمة أو أن الرابط غير مكتمل.</p><a href="home.html" class="card-btn" style="display:inline-block; margin-top:1rem;">العودة للرئيسية</a></div>';
+                    mainContentEl.innerHTML = '<div class="modern-card" style="text-align:center; padding:2rem;"><h3>تعذر العثور على الخدمة</h3><p>لم يتم تحديد معرّف الخدمة أو أن الرابط غير مكتمل.</p><a href="index.html" class="card-btn" style="display:inline-block; margin-top:1rem;">العودة للرئيسية</a></div>';
                 } else {
                     console.error('main content element not found to show missing id message');
                 }
@@ -356,7 +356,7 @@
                 const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
                 if (!currentUser) {
                     alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
-                    window.location.href = 'home.html';
+                    window.location.href = 'index.html';
                     return;
                 }
 
@@ -397,7 +397,7 @@
                     const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
                     if (!currentUser || !currentUser.id) {
                         alert('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى الصفحة الرئيسية.');
-                        window.location.href = 'home.html';
+                        window.location.href = 'index.html';
                         return;
                     }
 
